@@ -1,4 +1,6 @@
-﻿using Museum.Domain.Enums;
+﻿using System;
+using System.Linq;
+using Museum.Domain.Enums;
 using Museum.Tests.Fixtures;
 using Xunit;
 
@@ -35,7 +37,7 @@ public class QueriesTests : IClassFixture<MuseumFixture>
 
         Assert.NotNull(result);
 
-        for (int i = 1; i < result.Count; i++)
+        for (var i = 1; i < result.Count; i++)
         {
             Assert.True(result[i - 1].VisitorCount >= result[i].VisitorCount);
         }
@@ -76,7 +78,7 @@ public class QueriesTests : IClassFixture<MuseumFixture>
         var context = _fixture.Context;
 
         var dates = context.Excursions.Select(x => x.Date.Date).ToList();
-        if (!dates.Any()) return; 
+        if (!dates.Any()) return;
 
         var startDate = dates.Min();
         var endDate = dates.Max();
@@ -136,7 +138,7 @@ public class QueriesTests : IClassFixture<MuseumFixture>
     {
         var context = _fixture.Context;
 
-        var selectedExhibition = context.Exhibitions.FirstOrDefault();
+        var selectedExhibition = context.Exhibitions.FirstOrDefault(e => e.ExcursionExhibitions.Any());
         Assert.NotNull(selectedExhibition);
 
         var selectedHall = selectedExhibition.HallNumber;
@@ -179,7 +181,7 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             .OrderBy(visitor => visitor.FullName)
             .ToList();
 
-        for (int i = 1; i < result.Count; i++)
+        for (var i = 1; i < result.Count; i++)
         {
             Assert.True(string.Compare(result[i - 1].FullName, result[i].FullName, StringComparison.Ordinal) <= 0);
         }

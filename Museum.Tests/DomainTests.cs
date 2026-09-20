@@ -1,5 +1,8 @@
-﻿using Museum.Domain.Entities;
+﻿using System;
+using Museum.Domain.Entities;
 using Museum.Domain.Enums;
+using Xunit;
+
 namespace Museum.Tests;
 
 public class DomainTests
