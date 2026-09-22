@@ -20,7 +20,7 @@ public class Ticket
     /// <summary>
     /// Экскурсия, на которую приобретён билет.
     /// </summary>
-    public Excursion Excursion { get; set; } = null!;
+    public required Excursion Excursion { get; set; }
 
     /// <summary>
     /// Идентификатор посетителя, которому принадлежит билет.
@@ -30,7 +30,7 @@ public class Ticket
     /// <summary>
     /// Посетитель, которому принадлежит билет.
     /// </summary>
-    public Visitor Visitor { get; set; } = null!;
+    public required Visitor Visitor { get; set; }
 
     /// <summary>
     /// Тип билета.

@@ -1,4 +1,6 @@
-﻿using Museum.Domain.Enums;
+﻿using System;
+using System.Collections.Generic;
+using Museum.Domain.Enums;
 
 namespace Museum.Domain.Entities;
 
@@ -15,7 +17,7 @@ public class Exhibition
     /// <summary>
     /// Название выставки.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public required string Name { get; set; }
 
     /// <summary>
     /// Тематика выставки.
@@ -40,5 +42,5 @@ public class Exhibition
     /// <summary>
     /// Связи выставки с экскурсиями.
     /// </summary>
-    public List<ExcursionExhibition> ExcursionExhibitions { get; set; } = new();
+    public List<ExcursionExhibition> ExcursionExhibitions { get; set; } = [];
 }

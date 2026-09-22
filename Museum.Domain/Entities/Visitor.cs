@@ -1,4 +1,7 @@
-﻿namespace Museum.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Museum.Domain.Entities;
 
 /// <summary>
 /// Представляет посетителя музея.
@@ -13,20 +16,20 @@ public class Visitor
     /// <summary>
     /// Фамилия, имя и отчество посетителя.
     /// </summary>
-    public string FullName { get; set; } = string.Empty;
+    public required string FullName { get; set; }
 
     /// <summary>
     /// Номер телефона посетителя.
     /// </summary>
-    public string Phone { get; set; } = string.Empty;
+    public required string Phone { get; set; }
 
     /// <summary>
     /// Дата рождения посетителя.
     /// </summary>
-    public DateTime BirthDate { get; set; }
+    public DateOnly BirthDate { get; set; }
 
     /// <summary>
     /// Билеты, приобретённые посетителем.
     /// </summary>
-    public List<Ticket> Tickets { get; set; } = new();
+    public List<Ticket> Tickets { get; set; } = [];
 }

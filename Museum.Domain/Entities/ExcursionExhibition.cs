@@ -13,7 +13,7 @@ public class ExcursionExhibition
     /// <summary>
     /// Экскурсия, связанная с выставкой.
     /// </summary>
-    public Excursion Excursion { get; set; } = null!;
+    public required Excursion Excursion { get; set; }
 
     /// <summary>
     /// Идентификатор выставки.
@@ -23,5 +23,5 @@ public class ExcursionExhibition
     /// <summary>
     /// Выставка, посещаемая во время экскурсии.
     /// </summary>
-    public Exhibition Exhibition { get; set; } = null!;
+    public required Exhibition Exhibition { get; set; }
 }

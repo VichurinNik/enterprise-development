@@ -31,10 +31,10 @@ public class Excursion
     /// <summary>
     /// Выставки, которые посещаются во время экскурсии.
     /// </summary>
-    public List<ExcursionExhibition> Exhibitions { get; set; } = new();
+    public List<ExcursionExhibition> Exhibitions { get; set; } = [];
 
     /// <summary>
     /// Билеты, приобретённые на экскурсию.
     /// </summary>
-    public List<Ticket> Tickets { get; set; } = new();
+    public List<Ticket> Tickets { get; set; } = [];
 }

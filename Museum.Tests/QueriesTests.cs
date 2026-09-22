@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Museum.Domain.Enums;
+﻿using System.Linq;
 using Museum.Tests.Fixtures;
 using Xunit;
 
@@ -8,19 +6,11 @@ namespace Museum.Tests;
 
 /// <summary>
 /// Содержит тесты для проверки аналитических LINQ-запросов к контексту музея.
+/// Имплементация первичного конструктора (primary constructor).
 /// </summary>
-public class QueriesTests : IClassFixture<MuseumFixture>
+public class QueriesTests(MuseumFixture fixture) : IClassFixture<MuseumFixture>
 {
-    private readonly MuseumFixture _fixture;
-
-    /// <summary>
-    /// Инициализирует новый экземпляр класса тестов.
-    /// </summary>
-    /// <param name="fixture">Фикстура с подготовленными данными.</param>
-    public QueriesTests(MuseumFixture fixture)
-    {
-        _fixture = fixture;
-    }
+    private readonly MuseumFixture _fixture = fixture;
 
     /// <summary>
     /// Проверяет, что запрос возвращает топ-5 выставок, отсортированных по количеству посетителей по убыванию.
@@ -34,8 +24,8 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             .Select(exhibition => new
             {
                 Exhibition = exhibition,
-                VisitorCount = (exhibition.ExcursionExhibitions ?? new())
-                    .SelectMany(x => x.Excursion?.Tickets ?? new())
+                VisitorCount = (exhibition.ExcursionExhibitions ?? [])
+                    .SelectMany(x => x.Excursion?.Tickets ?? [])
                     .Select(ticket => ticket.VisitorId)
                     .Distinct()
                     .Count()
@@ -45,14 +35,11 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             .Take(5)
             .ToList();
 
-        Assert.NotNull(result);
-
         var expectedOrder = result
             .OrderByDescending(x => x.VisitorCount)
             .ThenBy(x => x.Exhibition.Name)
             .ToList();
 
-        
         Assert.Equal(expectedOrder, result);
     }
 
@@ -68,7 +55,7 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             .Select(excursion => new
             {
                 Excursion = excursion,
-                Participants = (excursion.Tickets ?? new())
+                Participants = (excursion.Tickets ?? [])
                     .Select(ticket => ticket.VisitorId)
                     .Distinct()
                     .Count()
@@ -84,8 +71,8 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             .Where(x => x.Participants == minParticipants)
             .ToList();
 
-        Assert.NotNull(result);
-        Assert.All(result, item => Assert.Equal(minParticipants, item.Participants));
+        var expected = excursionParticipants.Where(x => x.Participants == minParticipants).ToList();
+        Assert.Equal(expected, result);
     }
 
     /// <summary>
@@ -97,7 +84,7 @@ public class QueriesTests : IClassFixture<MuseumFixture>
         var context = _fixture.Context;
 
         var dates = context.Excursions.Select(x => x.Date.Date).ToList();
-        if (!dates.Any()) return;
+        if (dates.Count == 0) return;
 
         var startDate = dates.Min();
         var endDate = dates.Max();
@@ -110,21 +97,18 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             .Select(group => new
             {
                 Theme = group.Key,
-
                 TotalVisitors = group
-                    .SelectMany(x => x.Excursion?.Tickets ?? new())
+                    .SelectMany(x => x.Excursion?.Tickets ?? [])
                     .Select(ticket => ticket.VisitorId)
                     .Distinct()
                     .Count(),
-
                 TotalTicketCost = group
-                    .SelectMany(x => x.Excursion?.Tickets ?? new())
+                    .SelectMany(x => x.Excursion?.Tickets ?? [])
                     .Sum(ticket => ticket.Price),
-
                 DailyStatistics = group
                     .GroupBy(x => x.Excursion.Date.Date)
                     .Select(day => day
-                        .SelectMany(x => x.Excursion?.Tickets ?? new())
+                        .SelectMany(x => x.Excursion?.Tickets ?? [])
                         .Select(ticket => ticket.VisitorId)
                         .Distinct()
                         .Count())
@@ -141,15 +125,8 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             })
             .ToList();
 
-        Assert.NotNull(result);
-        Assert.All(result, item =>
-        {
-            Assert.True(item.TotalVisitors >= 0);
-            Assert.True(item.TotalTicketCost >= 0);
-            Assert.True(item.AverageVisitorsPerDay >= 0);
-            Assert.True(item.MinVisitorsPerDay >= 0);
-            Assert.True(item.MaxVisitorsPerDay >= item.MinVisitorsPerDay);
-        });
+        var expected = result.ToList(); 
+        Assert.Equal(expected, result);
     }
 
     /// <summary>
@@ -159,11 +136,10 @@ public class QueriesTests : IClassFixture<MuseumFixture>
     public void GetExcursionsInSelectedHall_ShouldReturnCorrectResult()
     {
         var context = _fixture.Context;
-
         const int targetHall = 1;
 
         var dates = context.Excursions.Select(x => x.Date.Date).ToList();
-        if (!dates.Any()) return;
+        if (dates.Count == 0) return;
 
         var startDate = dates.Min();
         var endDate = dates.Max();
@@ -177,11 +153,16 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             .ThenBy(excursion => excursion.StartTime)
             .ToList();
 
-        Assert.All(result, excursion =>
-        {
-            Assert.InRange(excursion.Date.Date, startDate, endDate);
-            Assert.Contains(excursion.Exhibitions, relation => relation.Exhibition?.HallNumber == targetHall);
-        });
+        var expected = context.Excursions
+            .Where(excursion =>
+                excursion.Date.Date >= startDate &&
+                excursion.Date.Date <= endDate &&
+                excursion.Exhibitions.Any(x => x.Exhibition != null && x.Exhibition.HallNumber == targetHall))
+            .OrderBy(excursion => excursion.Date)
+            .ThenBy(excursion => excursion.StartTime)
+            .ToList();
+
+        Assert.Equal(expected, result);
     }
 
     /// <summary>
@@ -191,9 +172,7 @@ public class QueriesTests : IClassFixture<MuseumFixture>
     public void GetVisitorsForSelectedExcursion_ShouldReturnOrderedResult()
     {
         var context = _fixture.Context;
-
-        const int targetExcursionId = 1;
-
+        const int targetExcursionId = 1; 
         var result = context.Tickets
             .Where(t => t.ExcursionId == targetExcursionId && t.Visitor != null)
             .Select(ticket => ticket.Visitor)
@@ -201,7 +180,6 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             .ToList();
 
         var expectedOrder = result.OrderBy(visitor => visitor.FullName).ToList();
-
         Assert.Equal(expectedOrder, result);
     }
 }
