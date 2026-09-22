@@ -238,4 +238,4 @@ Lab1_CorpRaz/
     ├── Fixtures/
     │   └── MuseumFixture.cs
     ├── DomainTests.cs
-    └── QueriesTests.csprise-development/discussions/categories/ideas).
+    └── QueriesTests.csprise
