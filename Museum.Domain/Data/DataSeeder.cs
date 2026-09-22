@@ -6,8 +6,15 @@ using System.Linq;
 
 namespace Museum.Domain.Data;
 
+/// <summary>
+/// Отвечает за генерацию начальных (фейковых) данных для предметной области музея.
+/// </summary>
 public static class DataSeeder
 {
+    /// <summary>
+    /// Создает и заполняет контекст музея сгенерированными данными (посетители, выставки, экскурсии, билеты).
+    /// </summary>
+    /// <returns>Заполненный контекст <see cref="MuseumContext"/>.</returns>
     public static MuseumContext Seed()
     {
         var context = new MuseumContext();
@@ -20,7 +27,7 @@ public static class DataSeeder
             .RuleFor(e => e.StartDate, f => f.Date.Past(1))
             .RuleFor(e => e.EndDate, (f, e) => e.StartDate.AddDays(f.Random.Int(30, 180)));
 
-        context.Exhibitions = exhibitionFaker.Generate(20); 
+        context.Exhibitions = exhibitionFaker.Generate(20);
 
         var excursionFaker = new Faker<Excursion>()
             .RuleFor(e => e.Id, f => f.IndexFaker + 1)
@@ -28,7 +35,7 @@ public static class DataSeeder
             .RuleFor(e => e.StartTime, f => TimeSpan.FromHours(f.Random.Int(9, 18)))
             .RuleFor(e => e.Duration, f => TimeSpan.FromMinutes(f.Random.Int(45, 120)));
 
-        context.Excursions = excursionFaker.Generate(20); 
+        context.Excursions = excursionFaker.Generate(20);
 
         var visitorFaker = new Faker<Visitor>()
             .RuleFor(v => v.Id, f => f.IndexFaker + 1)
@@ -36,13 +43,13 @@ public static class DataSeeder
             .RuleFor(v => v.Phone, f => f.Phone.PhoneNumber())
             .RuleFor(v => v.BirthDate, f => f.Date.Past(60, DateTime.Today.AddYears(-18)));
 
-        context.Visitors = visitorFaker.Generate(20); 
+        context.Visitors = visitorFaker.Generate(20);
 
         var random = new Random();
 
         foreach (var excursion in context.Excursions)
         {
-            var exhibitionsCount = random.Next(2, 5); 
+            var exhibitionsCount = random.Next(2, 5);
             var selectedExhibitions = context.Exhibitions.OrderBy(_ => random.Next()).Take(exhibitionsCount).ToList();
 
             foreach (var exhibition in selectedExhibitions)
@@ -65,7 +72,7 @@ public static class DataSeeder
 
         foreach (var excursion in context.Excursions)
         {
-            var participantsCount = random.Next(3, 11); 
+            var participantsCount = random.Next(3, 11);
             var selectedVisitors = context.Visitors.OrderBy(_ => random.Next()).Take(participantsCount).ToList();
 
             foreach (var visitor in selectedVisitors)

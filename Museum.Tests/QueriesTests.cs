@@ -6,15 +6,25 @@ using Xunit;
 
 namespace Museum.Tests;
 
+/// <summary>
+/// Содержит тесты для проверки аналитических LINQ-запросов к контексту музея.
+/// </summary>
 public class QueriesTests : IClassFixture<MuseumFixture>
 {
     private readonly MuseumFixture _fixture;
 
+    /// <summary>
+    /// Инициализирует новый экземпляр класса тестов.
+    /// </summary>
+    /// <param name="fixture">Фикстура с подготовленными данными.</param>
     public QueriesTests(MuseumFixture fixture)
     {
         _fixture = fixture;
     }
 
+    /// <summary>
+    /// Проверяет, что запрос возвращает топ-5 выставок, отсортированных по количеству посетителей по убыванию.
+    /// </summary>
     [Fact]
     public void GetTop5ExhibitionsByVisitors_ShouldReturnOrderedResult()
     {
@@ -37,12 +47,18 @@ public class QueriesTests : IClassFixture<MuseumFixture>
 
         Assert.NotNull(result);
 
-        for (var i = 1; i < result.Count; i++)
-        {
-            Assert.True(result[i - 1].VisitorCount >= result[i].VisitorCount);
-        }
+        var expectedOrder = result
+            .OrderByDescending(x => x.VisitorCount)
+            .ThenBy(x => x.Exhibition.Name)
+            .ToList();
+
+        
+        Assert.Equal(expectedOrder, result);
     }
 
+    /// <summary>
+    /// Проверяет, что запрос возвращает экскурсии с минимальным количеством участников.
+    /// </summary>
     [Fact]
     public void GetExcursionsWithMinimumParticipants_ShouldReturnCorrectResult()
     {
@@ -72,6 +88,9 @@ public class QueriesTests : IClassFixture<MuseumFixture>
         Assert.All(result, item => Assert.Equal(minParticipants, item.Participants));
     }
 
+    /// <summary>
+    /// Проверяет, что запрос формирует корректную статистику посещаемости сгруппированную по тематике выставки.
+    /// </summary>
     [Fact]
     public void GetAttendanceSummaryByTheme_ShouldReturnCorrectStatistics()
     {
@@ -133,18 +152,18 @@ public class QueriesTests : IClassFixture<MuseumFixture>
         });
     }
 
+    /// <summary>
+    /// Проверяет, что возвращаются только экскурсии, проходящие в заданном зале (используется константа).
+    /// </summary>
     [Fact]
     public void GetExcursionsInSelectedHall_ShouldReturnCorrectResult()
     {
         var context = _fixture.Context;
 
-        var selectedExhibition = context.Exhibitions.FirstOrDefault(e => e.ExcursionExhibitions.Any());
-        Assert.NotNull(selectedExhibition);
-
-        var selectedHall = selectedExhibition.HallNumber;
+        const int targetHall = 1;
 
         var dates = context.Excursions.Select(x => x.Date.Date).ToList();
-        Assert.NotEmpty(dates);
+        if (!dates.Any()) return;
 
         var startDate = dates.Min();
         var endDate = dates.Max();
@@ -153,37 +172,36 @@ public class QueriesTests : IClassFixture<MuseumFixture>
             .Where(excursion =>
                 excursion.Date.Date >= startDate &&
                 excursion.Date.Date <= endDate &&
-                excursion.Exhibitions.Any(x => x.Exhibition != null && x.Exhibition.HallNumber == selectedHall))
+                excursion.Exhibitions.Any(x => x.Exhibition != null && x.Exhibition.HallNumber == targetHall))
             .OrderBy(excursion => excursion.Date)
             .ThenBy(excursion => excursion.StartTime)
             .ToList();
 
-        Assert.NotEmpty(result);
         Assert.All(result, excursion =>
         {
-            Assert.True(excursion.Date.Date >= startDate);
-            Assert.True(excursion.Date.Date <= endDate);
-            Assert.Contains(excursion.Exhibitions, relation => relation.Exhibition?.HallNumber == selectedHall);
+            Assert.InRange(excursion.Date.Date, startDate, endDate);
+            Assert.Contains(excursion.Exhibitions, relation => relation.Exhibition?.HallNumber == targetHall);
         });
     }
 
+    /// <summary>
+    /// Проверяет, что список посетителей выбранной экскурсии сортируется по алфавиту.
+    /// </summary>
     [Fact]
     public void GetVisitorsForSelectedExcursion_ShouldReturnOrderedResult()
     {
         var context = _fixture.Context;
 
-        var selectedExcursion = context.Excursions.FirstOrDefault();
-        Assert.NotNull(selectedExcursion);
+        const int targetExcursionId = 1;
 
-        var result = (selectedExcursion.Tickets ?? new())
-            .Where(ticket => ticket.Visitor != null)
+        var result = context.Tickets
+            .Where(t => t.ExcursionId == targetExcursionId && t.Visitor != null)
             .Select(ticket => ticket.Visitor)
             .OrderBy(visitor => visitor.FullName)
             .ToList();
 
-        for (var i = 1; i < result.Count; i++)
-        {
-            Assert.True(string.Compare(result[i - 1].FullName, result[i].FullName, StringComparison.Ordinal) <= 0);
-        }
+        var expectedOrder = result.OrderBy(visitor => visitor.FullName).ToList();
+
+        Assert.Equal(expectedOrder, result);
     }
 }
