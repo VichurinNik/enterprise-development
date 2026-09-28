@@ -1,6 +1,5 @@
 ﻿using Museum.Domain.Entities;
 using Museum.Domain.Enums;
-using System;
 
 namespace Museum.Domain.Data;
 
@@ -17,7 +16,6 @@ public static class DataSeeder
     {
         var context = new MuseumContext();
 
-        // 1. Создаем 10 выставок
         for (var i = 1; i <= 10; i++)
         {
             context.Exhibitions.Add(new Exhibition
@@ -31,19 +29,16 @@ public static class DataSeeder
             });
         }
 
-        // 2. Создаем 10 экскурсий
         for (var i = 1; i <= 10; i++)
         {
             context.Excursions.Add(new Excursion
             {
                 Id = i,
-                Date = new DateTime(2026, 1, 15).AddDays(i * 2),
-                StartTime = TimeSpan.FromHours(10 + (i % 5)),
+                Date = new DateTime(2026, 1, 15, 10 + (i % 5), 0, 0).AddDays(i * 2),
                 Duration = TimeSpan.FromHours(1.5)
             });
         }
 
-        // 3. Создаем 10 посетителей
         for (var i = 1; i <= 10; i++)
         {
             context.Visitors.Add(new Visitor
@@ -55,7 +50,6 @@ public static class DataSeeder
             });
         }
 
-        // 4. Создаем связи Экскурсия-Выставка (каждая экскурсия охватывает 2 выставки)
         for (var i = 1; i <= 10; i++)
         {
             var exhibition1 = context.Exhibitions[i - 1];
@@ -73,7 +67,6 @@ public static class DataSeeder
             exhibition2.ExcursionExhibitions.Add(rel2);
         }
 
-        // 5. Создаем билеты (на каждую экскурсию приходят по 3 посетителя)
         var ticketId = 1;
         for (var i = 1; i <= 10; i++)
         {

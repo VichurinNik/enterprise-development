@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Museum.Domain.Entities;
+﻿namespace Museum.Domain.Entities;
 
 /// <summary>
 /// Представляет экскурсию в музее.
@@ -14,14 +11,9 @@ public class Excursion
     public int Id { get; set; }
 
     /// <summary>
-    /// Дата проведения экскурсии.
+    /// Дата и время начала проведения экскурсии.
     /// </summary>
     public DateTime Date { get; set; }
-
-    /// <summary>
-    /// Время начала экскурсии.
-    /// </summary>
-    public TimeSpan StartTime { get; set; }
 
     /// <summary>
     /// Продолжительность экскурсии.
