@@ -26,4 +26,11 @@ jobs:
         run: dotnet build Lab1CorpRaz.sln --no-restore
 
       - name: Test
-        run: dotnet test Lab1CorpRaz.sln --logger "console;verbosity=detailed"
+        run: dotnet test Lab1CorpRaz.sln
+
+      - name: Show test log
+        if: always()
+        run: |
+          echo "===== TEST LOG ====="
+          cat Museum.Tests/bin/Debug/net10.0/TestResults/Museum.Tests_net10.0_x64.log || true
+          echo "===== END TEST LOG ====="
