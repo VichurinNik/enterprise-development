@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Museum.Domain.Entities;
+﻿namespace Museum.Domain.Entities;
 
 /// <summary>
 /// Представляет посетителя музея.
