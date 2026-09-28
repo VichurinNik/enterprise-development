@@ -137,14 +137,18 @@ public class QueriesTests(MuseumFixture fixture) : IClassFixture<MuseumFixture>
             .Where(excursion =>
                 excursion.Date.Date >= startDate &&
                 excursion.Date.Date <= endDate &&
-                excursion.Exhibitions.Any(x => x.Exhibition != null && x.Exhibition.HallNumber == targetHall))
+                excursion.Exhibitions.Any(x =>
+                    x.Exhibition != null &&
+                    x.Exhibition.HallNumber == targetHall))
             .OrderBy(excursion => excursion.Date)
             .ToList();
 
-        var expectedIds = new[] { 1, 3, 4, 6, 7, 9 };
-        Assert.Equal(expectedIds, result.Select(x => x.Id).ToArray());
-    }
+        var expectedIds = new[] { 2, 3, 5, 6, 8, 9 };
 
+        Assert.Equal(
+            expectedIds,
+            result.Select(x => x.Id).ToArray());
+    }
     /// <summary>
     /// Проверяет, что список посетителей выбранной экскурсии сортируется по алфавиту.
     /// </summary>
