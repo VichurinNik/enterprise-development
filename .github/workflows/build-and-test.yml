@@ -26,4 +26,4 @@ jobs:
         run: dotnet build Lab1CorpRaz.sln --no-restore
 
       - name: Test
-        run: dotnet test Lab1CorpRaz.sln
+        run: dotnet test Lab1CorpRaz.sln --logger "console;verbosity=detailed"
