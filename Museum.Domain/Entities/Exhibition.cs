@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Museum.Domain.Enums;
+﻿using Museum.Domain.Enums;
 
 namespace Museum.Domain.Entities;
 
