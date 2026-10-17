@@ -206,7 +206,7 @@
 
 Данные хранятся в памяти в виде коллекций `List<T>`.
 
-Для генерации тестовых данных используется библиотека [Bogus](https://github.com/bchavez/Bogus).
+Начальные тестовые данные генерируются статически с помощью класса `DataSeeder`.
 
 Для тестирования используется [xUnit v3](https://xunit.net/?tabs=cs).
 
@@ -237,5 +237,4 @@ Lab1_CorpRaz/
 └── Museum.Tests/
     ├── Fixtures/
     │   └── MuseumFixture.cs
-    ├── DomainTests.cs
-    └── QueriesTests.csprise
+    └── QueriesTests.cs
