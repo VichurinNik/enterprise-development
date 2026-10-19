@@ -5,7 +5,7 @@ namespace Museum.Domain.Entities;
 /// <summary>
 /// Представляет билет на экскурсию.
 /// </summary>
-public class Ticket
+public class Ticket : IEntity
 {
     /// <summary>
     /// Уникальный идентификатор билета.

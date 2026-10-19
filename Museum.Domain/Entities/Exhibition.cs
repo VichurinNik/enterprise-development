@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using Museum.Domain.Enums;
 
 namespace Museum.Domain.Entities;
@@ -7,7 +6,7 @@ namespace Museum.Domain.Entities;
 /// <summary>
 /// Представляет музейную выставку.
 /// </summary>
-public class Exhibition
+public class Exhibition : IEntity
 {
     /// <summary>
     /// Уникальный идентификатор выставки.

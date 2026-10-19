@@ -3,7 +3,7 @@
 /// <summary>
 /// Представляет посетителя музея.
 /// </summary>
-public class Visitor
+public class Visitor : IEntity
 {
     /// <summary>
     /// Уникальный идентификатор посетителя.

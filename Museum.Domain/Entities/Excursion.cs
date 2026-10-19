@@ -3,7 +3,7 @@
 /// <summary>
 /// Представляет экскурсию в музее.
 /// </summary>
-public class Excursion
+public class Excursion : IEntity
 {
     /// <summary>
     /// Уникальный идентификатор экскурсии.

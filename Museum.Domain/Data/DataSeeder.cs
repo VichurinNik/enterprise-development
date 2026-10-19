@@ -4,14 +4,13 @@ using Museum.Domain.Enums;
 namespace Museum.Domain.Data;
 
 /// <summary>
-/// Отвечает за генерацию начальных статических данных для предметной области музея.
+/// Заполняет контекст начальными тестовыми данными.
 /// </summary>
 public static class DataSeeder
 {
     /// <summary>
-    /// Создает и заполняет контекст музея статичными детерминированными данными.
+    /// Создает и заполняет музейный контекст начальными данными.
     /// </summary>
-    /// <returns>Заполненный контекст <see cref="MuseumContext"/>.</returns>
     public static MuseumContext Seed()
     {
         var context = new MuseumContext();
@@ -34,7 +33,7 @@ public static class DataSeeder
             context.Excursions.Add(new Excursion
             {
                 Id = i,
-                Date = new DateTime(2026, 1, 15, 10 + (i % 5), 0, 0).AddDays(i * 2),
+                Date = new DateTime(2026, 1, 15, 10 + (i % 5), 0, 0).AddDays(i - 1),
                 Duration = TimeSpan.FromHours(1.5)
             });
         }
@@ -53,7 +52,7 @@ public static class DataSeeder
         for (var i = 1; i <= 10; i++)
         {
             var exhibition1 = context.Exhibitions[i - 1];
-            var exhibition2 = context.Exhibitions[(i + 1) % 10];
+            var exhibition2 = context.Exhibitions[i % 10];
             var excursion = context.Excursions[i - 1];
 
             var rel1 = new ExcursionExhibition { ExcursionId = excursion.Id, Excursion = excursion, ExhibitionId = exhibition1.Id, Exhibition = exhibition1 };
@@ -74,7 +73,7 @@ public static class DataSeeder
 
             for (var j = 0; j < 3; j++)
             {
-                var visitor = context.Visitors[(i + j) % 10];
+                var visitor = context.Visitors[(i + j - 1) % 10];
                 var ticketType = j % 2 == 0 ? TicketType.Adult : TicketType.Discounted;
 
                 var ticket = new Ticket
