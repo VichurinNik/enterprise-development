@@ -216,25 +216,27 @@
 
 ```text
 Lab1_CorpRaz/
-├── Lab1_CorpRaz.slnx
+├── Lab1_CorpRaz.slnx             # Файл решения .NET
 │
-├── Museum.Domain/
+├── Museum.Domain/                 # [Domain Layer] Доменная модель
 │   ├── Data/
-│   │   ├── DataSeeder.cs
-│   │   └── MuseumContext.cs
-│   │
-│   ├── Entities/
-│   │   ├── Excursion.cs
-│   │   ├── ExcursionExhibition.cs
-│   │   ├── Exhibition.cs
-│   │   ├── Ticket.cs
-│   │   └── Visitor.cs
-│   │
-│   └── Enums/
-│       ├── ExhibitionTheme.cs
-│       └── TicketType.cs
+│   │   ├── DataSeeder.cs          # Заполнение начальными данными
+│   │   └── MuseumContext.cs       # Хранилище сущностей
+│   ├── Entities/                  # Доменные сущности (Exhibition, Visitor, etc.)
+│   └── Enums/                     # Перечисления (ExhibitionTheme, TicketType)
 │
-└── Museum.Tests/
-    ├── Fixtures/
-    │   └── MuseumFixture.cs
-    └── QueriesTests.cs
+├── Museum.Contracts/              # [Contracts Layer] Контракты передаваемых данных
+│   ├── Analytics/                 # DTO для аналитических отчетов
+│   └── Exhibitions/               # DTO для операций с выставками (DTO, CreateUpdateDTO)
+│
+├── Museum.Application/            # [Application Layer] Бизнес-логика и репозитории
+│   ├── Repositories/              # IRepository<T> и InMemoryRepository<T>
+│   └── Services/                  # ExhibitionService, AnalyticsService с логированием
+│
+├── Museum.Api/                    # [Presentation Layer] Web API и контроллеры
+│   ├── Controllers/               # ExhibitionsController, AnalyticsController
+│   └── Program.cs                 # Точка входа, DI-контейнер, Scalar OpenAPI
+│
+└── Museum.Tests/                  # [Test Layer] Unit-тестирование (xUnit v3)
+    ├── Fixtures/                  # Фикстуры для тестов (MuseumFixture)
+    └── QueriesTests.cs            # LINQ-запросы и проверки аналитики
