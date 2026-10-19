@@ -6,6 +6,6 @@ namespace Museum.Contracts.Excursions;
 public record ExcursionsDto(
     int Id,
     DateTime Date,
-    TimeSpan DuraDuration,
+    TimeSpan Duration,
     IReadOnlyList<int> ExhibitionIds
 );
