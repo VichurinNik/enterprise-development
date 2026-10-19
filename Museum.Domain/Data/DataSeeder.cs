@@ -52,7 +52,7 @@ public static class DataSeeder
         for (var i = 1; i <= 10; i++)
         {
             var exhibition1 = context.Exhibitions[i - 1];
-            var exhibition2 = context.Exhibitions[i % 10];
+            var exhibition2 = context.Exhibitions[(i + 1) % 10];
             var excursion = context.Excursions[i - 1];
 
             var rel1 = new ExcursionExhibition { ExcursionId = excursion.Id, Excursion = excursion, ExhibitionId = exhibition1.Id, Exhibition = exhibition1 };
@@ -73,7 +73,7 @@ public static class DataSeeder
 
             for (var j = 0; j < 3; j++)
             {
-                var visitor = context.Visitors[(i + j - 1) % 10];
+                var visitor = context.Visitors[(i + j) % 10];
                 var ticketType = j % 2 == 0 ? TicketType.Adult : TicketType.Discounted;
 
                 var ticket = new Ticket
