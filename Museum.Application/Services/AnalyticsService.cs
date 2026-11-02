@@ -49,8 +49,6 @@ public class AnalyticsService(
     public IReadOnlyList<ThemeAttendanceSummaryDto> GetThemeAttendanceSummary(DateTime start, DateTime end)
     {
         logger.LogInformation("Формирование сводной статистики за период с {Start} по {End}.", start, end);
-
-        // Временный пустой ответ до интеграции полноценных запросов LINQ из 1-й лабы
         return [];
     }
 }
