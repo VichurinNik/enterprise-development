@@ -216,14 +216,16 @@
 
 ```text
 Lab1_CorpRaz/
-├── Lab1_CorpRaz.slnx             # Файл решения .NET
+├── Lab1CorpRaz.sln              # Файл решения .NET
 │
 ├── Museum.Domain/                 # [Domain Layer] Доменная модель
 │   ├── Data/
 │   │   ├── DataSeeder.cs          # Заполнение начальными данными
 │   │   └── MuseumContext.cs       # Хранилище сущностей
 │   ├── Entities/                  # Доменные сущности (Exhibition, Visitor, etc.)
-│   └── Enums/                     # Перечисления (ExhibitionTheme, TicketType)
+│
+├── Museum.Shared/                 # Общие типы для Domain и Contracts
+│   └── Enums/                     # ExhibitionTheme и TicketType
 │
 ├── Museum.Contracts/              # [Contracts Layer] Контракты передаваемых данных
 │   ├── Analytics/                 # DTO для аналитических отчетов
@@ -234,7 +236,7 @@ Lab1_CorpRaz/
 │   └── Services/                  # ExhibitionService, AnalyticsService с логированием
 │
 ├── Museum.Api/                    # [Presentation Layer] Web API и контроллеры
-│   ├── Controllers/               # ExhibitionsController, AnalyticsController
+│   ├── Controllers/               # CRUD-контроллеры и AnalyticsController
 │   └── Program.cs                 # Точка входа, DI-контейнер, Scalar OpenAPI
 │
 └── Museum.Tests/                  # [Test Layer] Unit-тестирование (xUnit v3)

@@ -1,12 +1,13 @@
 ﻿using Museum.Application.Repositories;
 using Museum.Application.Services;
+using Museum.Api;
 using Museum.Domain.Data;
 using Museum.Domain.Entities;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => options.Filters.Add<ApiExceptionFilter>());
 
 builder.Services.AddOpenApi();
 
@@ -24,6 +25,7 @@ builder.Services.AddSingleton<IRepository<Visitor>>(sp =>
 
 builder.Services.AddSingleton<IRepository<Ticket>>(sp =>
     new InMemoryRepository<Ticket>(sp.GetRequiredService<MuseumContext>().Tickets));
+
 
 
 builder.Services.AddScoped<IExhibitionService, ExhibitionService>();

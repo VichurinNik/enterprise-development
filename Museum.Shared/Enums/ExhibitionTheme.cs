@@ -1,4 +1,4 @@
-namespace Museum.Domain.Enums;
+namespace Museum.Shared.Enums;
 
 /// <summary>
 /// Перечисление тематик музейных выставок..

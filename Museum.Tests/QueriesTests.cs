@@ -1,6 +1,5 @@
-using Museum.Domain.Enums;
+using Museum.Shared.Enums;
 using Museum.Tests.Fixtures;
-using Xunit;
 
 namespace Museum.Tests;
 

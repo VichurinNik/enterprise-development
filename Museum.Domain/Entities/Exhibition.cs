@@ -1,5 +1,5 @@
-﻿
-using Museum.Domain.Enums;
+
+using Museum.Shared.Enums;
 
 namespace Museum.Domain.Entities;
 
