@@ -1,66 +1,93 @@
 using Microsoft.AspNetCore.Mvc;
-using Museum.Application.Repositories;
+using Museum.Application.Services;
 using Museum.Contracts.Visitors;
-using Museum.Domain.Entities;
 
 namespace Museum.Api.Controllers;
 
-/// <summary>Управление посетителями музея.</summary>
+/// <summary>
+/// Контроллер управления посетителями музея.
+/// </summary>
+/// <param name="service">Сервис управления посетителями музея.</param>
+/// <param name="logger">Журнал запросов контроллера.</param>
 [ApiController]
 [Route("api/[controller]")]
-public class VisitorsController(IRepository<Visitor> visitors, IRepository<Ticket> tickets, ILogger<VisitorsController> logger) : ControllerBase
+public class VisitorsController(IVisitorService service, ILogger<VisitorsController> logger) : ControllerBase
 {
-    /// <summary>Возвращает список всех посетителей.</summary>
+    /// <summary>
+    /// Возвращает список всех посетителей.
+    /// </summary>
+    /// <returns>Список посетителей.</returns>
     [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<VisitorDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public ActionResult<IReadOnlyList<VisitorDto>> GetAll()
     {
         logger.LogInformation("Получение списка посетителей.");
-        return Ok(visitors.GetAll().Select(Map).ToList());
+        return Ok(service.GetAll());
     }
 
-    /// <summary>Возвращает посетителя по идентификатору.</summary>
+    /// <summary>
+    /// Возвращает данные посетителя по идентификатору.
+    /// </summary>
+    /// <param name="id">Идентификатор посетителя.</param>
+    /// <returns>Данные посетителя или ответ об отсутствии записи.</returns>
     [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(VisitorDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public ActionResult<VisitorDto> GetById(int id)
     {
         logger.LogInformation("Получение посетителя {Id}.", id);
-        var visitor = visitors.GetById(id);
-        return visitor is null ? NotFound() : Ok(Map(visitor));
+        var item = service.GetById(id);
+        return item is null ? NotFound() : Ok(item);
     }
 
-    /// <summary>Создаёт нового посетителя.</summary>
+    /// <summary>
+    /// Создаёт запись посетителя.
+    /// </summary>
+    /// <param name="dto">Данные для создания посетителя.</param>
+    /// <returns>Созданная запись и адрес её получения.</returns>
     [HttpPost]
-    public ActionResult<VisitorDto> Create(VisitorCreateUpdateDto dto)
+    [ProducesResponseType(typeof(VisitorDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public ActionResult<VisitorDto> Create([FromBody] VisitorCreateUpdateDto dto)
     {
         logger.LogInformation("Создание посетителя.");
-        var visitor = visitors.Create(new Visitor { FullName = dto.FullName, Phone = dto.Phone, BirthDate = dto.BirthDate });
-        return CreatedAtAction(nameof(GetById), new { id = visitor.Id }, Map(visitor));
+        var created = service.Create(dto);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    /// <summary>Обновляет данные посетителя.</summary>
+    /// <summary>
+    /// Обновляет данные посетителя.
+    /// </summary>
+    /// <param name="id">Идентификатор посетителя.</param>
+    /// <param name="dto">Новые данные посетителя.</param>
+    /// <returns>Ответ без содержимого или сообщение об отсутствии записи.</returns>
     [HttpPut("{id:int}")]
-    public ActionResult Update(int id, VisitorCreateUpdateDto dto)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public ActionResult Update(int id, [FromBody] VisitorCreateUpdateDto dto)
     {
         logger.LogInformation("Обновление посетителя {Id}.", id);
-        var visitor = visitors.GetById(id);
-        if (visitor is null) return NotFound();
-        visitor.FullName = dto.FullName;
-        visitor.Phone = dto.Phone;
-        visitor.BirthDate = dto.BirthDate;
-        visitors.Update(visitor);
-        return NoContent();
+        return service.Update(id, dto) ? NoContent() : NotFound();
     }
 
-    /// <summary>Удаляет посетителя без билетов.</summary>
+    /// <summary>
+    /// Удаляет запись посетителя.
+    /// </summary>
+    /// <param name="id">Идентификатор посетителя.</param>
+    /// <returns>Ответ без содержимого либо ошибка отсутствия или использования записи.</returns>
     [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public ActionResult Delete(int id)
     {
         logger.LogInformation("Удаление посетителя {Id}.", id);
-        if (visitors.GetById(id) is null) return NotFound();
-        if (tickets.GetAll().Any(ticket => ticket.VisitorId == id))
-            return Conflict(new { Message = "Нельзя удалить посетителя, у которого есть билеты." });
-        visitors.Delete(id);
-        return NoContent();
+        return service.Delete(id) ? NoContent() : NotFound();
     }
-
-    private static VisitorDto Map(Visitor visitor) => new(visitor.Id, visitor.FullName, visitor.Phone, visitor.BirthDate);
 }

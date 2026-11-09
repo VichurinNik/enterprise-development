@@ -1,4 +1,4 @@
-﻿using Museum.Domain.Entities;
+using Museum.Domain.Entities;
 
 namespace Museum.Application.Repositories;
 
@@ -6,6 +6,7 @@ namespace Museum.Application.Repositories;
 /// Реализация универсального репозитория для хранения данных в оперативной памяти.
 /// </summary>
 /// <typeparam name="TEntity">Тип доменной сущности.</typeparam>
+/// <param name="items">Коллекция сущностей в памяти.</param>
 public class InMemoryRepository<TEntity>(List<TEntity> items) : IRepository<TEntity>
     where TEntity : class, IEntity
 {

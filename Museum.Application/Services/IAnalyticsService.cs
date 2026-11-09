@@ -1,28 +1,47 @@
-﻿using Museum.Contracts.Analytics;
+using Museum.Contracts.Analytics;
+using Museum.Contracts.Excursions;
+using Museum.Contracts.Visitors;
 
 namespace Museum.Application.Services;
 
 /// <summary>
-/// Интерфейс службы для получения аналитической информации.
+/// Сервис аналитических запросов к данным музея.
 /// </summary>
 public interface IAnalyticsService
 {
     /// <summary>
-    /// Возвращает топ-5 выставок по количеству посетителей.
+    /// Возвращает топ-5 выставок по числу уникальных посетителей.
     /// </summary>
-    public IReadOnlyList<TopExhibitionDto> GetTop5Exhibitions();
-
-    /// <summary>Возвращает экскурсии с минимальным количеством участников.</summary>
-    public IReadOnlyList<ExcursionParticipantsDto> GetExcursionsWithMinimumParticipants();
+    /// <returns>Результаты аналитического запроса.</returns>
+    IReadOnlyList<TopExhibitionDto> GetTop5Exhibitions();
 
     /// <summary>
-    /// Возвращает сводную статистику посещаемости по тематикам выставок за указанный период.
+    /// Возвращает экскурсии с минимальным количеством участников.
     /// </summary>
-    public IReadOnlyList<ThemeAttendanceSummaryDto> GetThemeAttendanceSummary(DateTime start, DateTime end);
+    /// <returns>Результаты аналитического запроса.</returns>
+    IReadOnlyList<ExcursionParticipantsDto> GetExcursionsWithMinimumParticipants();
 
-    /// <summary>Возвращает экскурсии в выбранном зале за период.</summary>
-    public IReadOnlyList<Museum.Contracts.Excursions.ExcursionsDto> GetExcursionsInHall(int hallNumber, DateTime start, DateTime end);
+    /// <summary>
+    /// Возвращает статистику по тематикам выставок за период.
+    /// </summary>
+    /// <param name="start">Начальная дата периода, включительно.</param>
+    /// <param name="end">Конечная дата периода, включительно.</param>
+    /// <returns>Результаты аналитического запроса.</returns>
+    IReadOnlyList<ThemeAttendanceSummaryDto> GetThemeAttendanceSummary(DateTime start, DateTime end);
 
-    /// <summary>Возвращает посетителей экскурсии в алфавитном порядке.</summary>
-    public IReadOnlyList<Museum.Contracts.Visitors.VisitorDto> GetVisitorsForExcursion(int excursionId);
+    /// <summary>
+    /// Возвращает экскурсии в выбранном зале за период.
+    /// </summary>
+    /// <param name="hallNumber">Номер зала.</param>
+    /// <param name="start">Начальная дата периода, включительно.</param>
+    /// <param name="end">Конечная дата периода, включительно.</param>
+    /// <returns>Результаты аналитического запроса.</returns>
+    IReadOnlyList<ExcursionsDto> GetExcursionsInHall(int hallNumber, DateTime start, DateTime end);
+
+    /// <summary>
+    /// Возвращает посетителей экскурсии в алфавитном порядке.
+    /// </summary>
+    /// <param name="excursionId">Идентификатор экскурсии.</param>
+    /// <returns>Результаты аналитического запроса.</returns>
+    IReadOnlyList<VisitorDto> GetVisitorsForExcursion(int excursionId);
 }

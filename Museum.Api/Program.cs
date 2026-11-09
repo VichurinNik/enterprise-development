@@ -1,4 +1,4 @@
-﻿using Museum.Application.Repositories;
+using Museum.Application.Repositories;
 using Museum.Application.Services;
 using Museum.Api;
 using Museum.Domain.Data;
@@ -13,7 +13,6 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddSingleton(DataSeeder.Seed());
 
-
 builder.Services.AddSingleton<IRepository<Exhibition>>(sp =>
     new InMemoryRepository<Exhibition>(sp.GetRequiredService<MuseumContext>().Exhibitions));
 
@@ -26,13 +25,16 @@ builder.Services.AddSingleton<IRepository<Visitor>>(sp =>
 builder.Services.AddSingleton<IRepository<Ticket>>(sp =>
     new InMemoryRepository<Ticket>(sp.GetRequiredService<MuseumContext>().Tickets));
 
+builder.Services.AddSingleton<IExcursionExhibitionRepository>(sp =>
+    new InMemoryExcursionExhibitionRepository(sp.GetRequiredService<MuseumContext>().ExcursionExhibitions));
 
-
+builder.Services.AddScoped<IVisitorService, VisitorService>();
+builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IExcursionService, ExcursionService>();
 builder.Services.AddScoped<IExhibitionService, ExhibitionService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
@@ -44,7 +46,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

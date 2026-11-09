@@ -1,94 +1,92 @@
 using Microsoft.AspNetCore.Mvc;
-using Museum.Application.Repositories;
+using Museum.Application.Services;
 using Museum.Contracts.Tickets;
-using Museum.Domain.Entities;
 
 namespace Museum.Api.Controllers;
 
-/// <summary>Управление билетами на экскурсии.</summary>
+/// <summary>
+/// Контроллер управления билетами на экскурсии.
+/// </summary>
+/// <param name="service">Сервис управления билетами на экскурсии.</param>
+/// <param name="logger">Журнал запросов контроллера.</param>
 [ApiController]
 [Route("api/[controller]")]
-public class TicketsController(
-    IRepository<Ticket> tickets,
-    IRepository<Excursion> excursions,
-    IRepository<Visitor> visitors,
-    ILogger<TicketsController> logger) : ControllerBase
+public class TicketsController(ITicketService service, ILogger<TicketsController> logger) : ControllerBase
 {
-    /// <summary>Возвращает список всех билетов.</summary>
+    /// <summary>
+    /// Возвращает список всех билетов.
+    /// </summary>
+    /// <returns>Список билетов.</returns>
     [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<TicketDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public ActionResult<IReadOnlyList<TicketDto>> GetAll()
     {
         logger.LogInformation("Получение списка билетов.");
-        return Ok(tickets.GetAll().Select(Map).ToList());
+        return Ok(service.GetAll());
     }
 
-    /// <summary>Возвращает билет по идентификатору.</summary>
+    /// <summary>
+    /// Возвращает данные билета по идентификатору.
+    /// </summary>
+    /// <param name="id">Идентификатор билета.</param>
+    /// <returns>Данные билета или ответ об отсутствии записи.</returns>
     [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(TicketDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public ActionResult<TicketDto> GetById(int id)
     {
         logger.LogInformation("Получение билета {Id}.", id);
-        var ticket = tickets.GetById(id);
-        return ticket is null ? NotFound() : Ok(Map(ticket));
+        var item = service.GetById(id);
+        return item is null ? NotFound() : Ok(item);
     }
 
-    /// <summary>Создаёт билет для существующих экскурсии и посетителя.</summary>
+    /// <summary>
+    /// Создаёт запись билета.
+    /// </summary>
+    /// <param name="dto">Данные для создания билета.</param>
+    /// <returns>Созданная запись и адрес её получения.</returns>
     [HttpPost]
-    public ActionResult<TicketDto> Create(TicketCreateUpdateDto dto)
+    [ProducesResponseType(typeof(TicketDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public ActionResult<TicketDto> Create([FromBody] TicketCreateUpdateDto dto)
     {
-        logger.LogInformation("Создание билета для экскурсии {ExcursionId}.", dto.ExcursionId);
-        var excursion = excursions.GetById(dto.ExcursionId);
-        var visitor = visitors.GetById(dto.VisitorId);
-        if (excursion is null || visitor is null)
-            return BadRequest(new { Message = "Экскурсия или посетитель не найдены." });
-        if (dto.Price < 0) return BadRequest(new { Message = "Стоимость не может быть отрицательной." });
-        var ticket = tickets.Create(new Ticket
-        {
-            ExcursionId = excursion.Id, Excursion = excursion,
-            VisitorId = visitor.Id, Visitor = visitor,
-            TicketType = dto.TicketType, Price = dto.Price
-        });
-        excursion.Tickets.Add(ticket);
-        visitor.Tickets.Add(ticket);
-        return CreatedAtAction(nameof(GetById), new { id = ticket.Id }, Map(ticket));
+        logger.LogInformation("Создание билета.");
+        var created = service.Create(dto);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    /// <summary>Обновляет данные билета.</summary>
+    /// <summary>
+    /// Обновляет данные билета.
+    /// </summary>
+    /// <param name="id">Идентификатор билета.</param>
+    /// <param name="dto">Новые данные билета.</param>
+    /// <returns>Ответ без содержимого или сообщение об отсутствии записи.</returns>
     [HttpPut("{id:int}")]
-    public ActionResult Update(int id, TicketCreateUpdateDto dto)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public ActionResult Update(int id, [FromBody] TicketCreateUpdateDto dto)
     {
         logger.LogInformation("Обновление билета {Id}.", id);
-        var ticket = tickets.GetById(id);
-        if (ticket is null) return NotFound();
-        var excursion = excursions.GetById(dto.ExcursionId);
-        var visitor = visitors.GetById(dto.VisitorId);
-        if (excursion is null || visitor is null || dto.Price < 0) return BadRequest();
-        ticket.Excursion.Tickets.Remove(ticket);
-        ticket.Visitor.Tickets.Remove(ticket);
-        ticket.ExcursionId = excursion.Id;
-        ticket.Excursion = excursion;
-        ticket.VisitorId = visitor.Id;
-        ticket.Visitor = visitor;
-        ticket.TicketType = dto.TicketType;
-        ticket.Price = dto.Price;
-        excursion.Tickets.Add(ticket);
-        visitor.Tickets.Add(ticket);
-        tickets.Update(ticket);
-        return NoContent();
+        return service.Update(id, dto) ? NoContent() : NotFound();
     }
 
-    /// <summary>Удаляет билет.</summary>
+    /// <summary>
+    /// Удаляет запись билета.
+    /// </summary>
+    /// <param name="id">Идентификатор билета.</param>
+    /// <returns>Ответ без содержимого либо ошибка отсутствия записи.</returns>
     [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public ActionResult Delete(int id)
     {
         logger.LogInformation("Удаление билета {Id}.", id);
-        var ticket = tickets.GetById(id);
-        if (ticket is null) return NotFound();
-        ticket.Excursion.Tickets.Remove(ticket);
-        ticket.Visitor.Tickets.Remove(ticket);
-        tickets.Delete(id);
-        return NoContent();
+        return service.Delete(id) ? NoContent() : NotFound();
     }
-
-    private static TicketDto Map(Ticket ticket) =>
-        new(ticket.Id, ticket.ExcursionId, ticket.VisitorId, ticket.TicketType, ticket.Price);
 }

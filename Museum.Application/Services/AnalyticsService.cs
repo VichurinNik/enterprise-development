@@ -10,6 +10,11 @@ namespace Museum.Application.Services;
 /// <summary>
 /// Реализация службы аналитики музейной системы.
 /// </summary>
+/// <param name="exhibitionRepo">Репозиторий выставок.</param>
+/// <param name="ticketRepo">Репозиторий билетов.</param>
+/// <param name="excursionRepo">Репозиторий экскурсий.</param>
+/// <param name="visitorRepo">Репозиторий посетителей.</param>
+/// <param name="logger">Журнал аналитических запросов.</param>
 public class AnalyticsService(
     IRepository<Exhibition> exhibitionRepo,
     IRepository<Ticket> ticketRepo,

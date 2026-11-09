@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
+using Museum.Application.Exceptions;
 using Museum.Application.Repositories;
 using Museum.Contracts.Exhibitions;
 using Museum.Domain.Entities;
@@ -8,8 +9,12 @@ namespace Museum.Application.Services;
 /// <summary>
 /// Реализация службы управления выставками с поддержкой логирования.
 /// </summary>
+/// <param name="repository">Репозиторий выставок.</param>
+/// <param name="links">Репозиторий связей с экскурсиями.</param>
+/// <param name="logger">Журнал операций сервиса.</param>
 public class ExhibitionService(
     IRepository<Exhibition> repository,
+    IExcursionExhibitionRepository links,
     ILogger<ExhibitionService> logger) : IExhibitionService
 {
     /// <inheritdoc />
@@ -70,12 +75,28 @@ public class ExhibitionService(
     }
 
     /// <inheritdoc />
-    public void Delete(int id)
+    public bool Delete(int id)
     {
+        if (repository.GetById(id) is null)
+        {
+            return false;
+        }
+
+        if (links.ExistsForExhibition(id))
+        {
+            throw new EntityInUseException("Нельзя удалить выставку, которая входит в экскурсию.");
+        }
+
         repository.Delete(id);
         logger.LogInformation("Удалена выставка с Id = {Id}.", id);
+        return true;
     }
 
+    /// <summary>
+    /// Преобразует выставку в контракт ответа.
+    /// </summary>
+    /// <param name="entity">Выставка из хранилища.</param>
+    /// <returns>Данные выставки для передачи клиенту.</returns>
     private static ExhibitionDto MapToDto(Exhibition entity) =>
         new(entity.Id, entity.Name, entity.Theme, entity.HallNumber, entity.StartDate, entity.EndDate);
 }

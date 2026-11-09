@@ -232,8 +232,8 @@ Lab1_CorpRaz/
 │   └── Exhibitions/               # DTO для операций с выставками (DTO, CreateUpdateDTO)
 │
 ├── Museum.Application/            # [Application Layer] Бизнес-логика и репозитории
-│   ├── Repositories/              # IRepository<T> и InMemoryRepository<T>
-│   └── Services/                  # ExhibitionService, AnalyticsService с логированием
+│   ├── Repositories/              # Репозитории сущностей и связей экскурсий с выставками
+│   └── Services/                  # CRUD-сервисы и AnalyticsService
 │
 ├── Museum.Api/                    # [Presentation Layer] Web API и контроллеры
 │   ├── Controllers/               # CRUD-контроллеры и AnalyticsController
@@ -242,3 +242,4 @@ Lab1_CorpRaz/
 └── Museum.Tests/                  # [Test Layer] Unit-тестирование (xUnit v3)
     ├── Fixtures/                  # Фикстуры для тестов (MuseumFixture)
     └── QueriesTests.cs            # LINQ-запросы и проверки аналитики
+```

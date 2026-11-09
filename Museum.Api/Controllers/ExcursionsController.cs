@@ -1,116 +1,93 @@
 using Microsoft.AspNetCore.Mvc;
-using Museum.Application.Repositories;
+using Museum.Application.Services;
 using Museum.Contracts.Excursions;
-using Museum.Domain.Data;
-using Museum.Domain.Entities;
 
 namespace Museum.Api.Controllers;
 
-/// <summary>Управление музейными экскурсиями.</summary>
+/// <summary>
+/// Контроллер управления музейными экскурсиями.
+/// </summary>
+/// <param name="service">Сервис управления музейными экскурсиями.</param>
+/// <param name="logger">Журнал запросов контроллера.</param>
 [ApiController]
 [Route("api/[controller]")]
-public class ExcursionsController(
-    IRepository<Excursion> excursions,
-    IRepository<Exhibition> exhibitions,
-    IRepository<Ticket> tickets,
-    MuseumContext context,
-    ILogger<ExcursionsController> logger) : ControllerBase
+public class ExcursionsController(IExcursionService service, ILogger<ExcursionsController> logger) : ControllerBase
 {
-    /// <summary>Возвращает список всех экскурсий.</summary>
+    /// <summary>
+    /// Возвращает список всех экскурсий.
+    /// </summary>
+    /// <returns>Список экскурсий.</returns>
     [HttpGet]
+    [ProducesResponseType(typeof(IReadOnlyList<ExcursionsDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public ActionResult<IReadOnlyList<ExcursionsDto>> GetAll()
     {
         logger.LogInformation("Получение списка экскурсий.");
-        return Ok(excursions.GetAll().Select(Map).ToList());
+        return Ok(service.GetAll());
     }
 
-    /// <summary>Возвращает экскурсию по идентификатору.</summary>
+    /// <summary>
+    /// Возвращает данные экскурсии по идентификатору.
+    /// </summary>
+    /// <param name="id">Идентификатор экскурсии.</param>
+    /// <returns>Данные экскурсии или ответ об отсутствии записи.</returns>
     [HttpGet("{id:int}")]
+    [ProducesResponseType(typeof(ExcursionsDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public ActionResult<ExcursionsDto> GetById(int id)
     {
         logger.LogInformation("Получение экскурсии {Id}.", id);
-        var excursion = excursions.GetById(id);
-        return excursion is null ? NotFound() : Ok(Map(excursion));
+        var item = service.GetById(id);
+        return item is null ? NotFound() : Ok(item);
     }
 
-    /// <summary>Создаёт экскурсию и связывает её с выставками.</summary>
+    /// <summary>
+    /// Создаёт запись экскурсии.
+    /// </summary>
+    /// <param name="dto">Данные для создания экскурсии.</param>
+    /// <returns>Созданная запись и адрес её получения.</returns>
     [HttpPost]
-    public ActionResult<ExcursionsDto> Create(ExcursionCreateUpdateDto dto)
+    [ProducesResponseType(typeof(ExcursionsDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public ActionResult<ExcursionsDto> Create([FromBody] ExcursionCreateUpdateDto dto)
     {
         logger.LogInformation("Создание экскурсии.");
-        var selected = ResolveExhibitions(dto);
-        if (selected is null) return BadRequest(new { Message = "Выставка не найдена или список содержит повторения." });
-        if (dto.Duration <= TimeSpan.Zero) return BadRequest(new { Message = "Продолжительность должна быть положительной." });
-        var excursion = excursions.Create(new Excursion { Date = dto.Date, Duration = dto.Duration });
-        AttachExhibitions(excursion, selected);
-        return CreatedAtAction(nameof(GetById), new { id = excursion.Id }, Map(excursion));
+        var created = service.Create(dto);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    /// <summary>Обновляет экскурсию и список её выставок.</summary>
+    /// <summary>
+    /// Обновляет данные экскурсии.
+    /// </summary>
+    /// <param name="id">Идентификатор экскурсии.</param>
+    /// <param name="dto">Новые данные экскурсии.</param>
+    /// <returns>Ответ без содержимого или сообщение об отсутствии записи.</returns>
     [HttpPut("{id:int}")]
-    public ActionResult Update(int id, ExcursionCreateUpdateDto dto)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public ActionResult Update(int id, [FromBody] ExcursionCreateUpdateDto dto)
     {
         logger.LogInformation("Обновление экскурсии {Id}.", id);
-        var excursion = excursions.GetById(id);
-        if (excursion is null) return NotFound();
-        var selected = ResolveExhibitions(dto);
-        if (selected is null || dto.Duration <= TimeSpan.Zero) return BadRequest();
-        DetachExhibitions(excursion);
-        excursion.Date = dto.Date;
-        excursion.Duration = dto.Duration;
-        AttachExhibitions(excursion, selected);
-        excursions.Update(excursion);
-        return NoContent();
+        return service.Update(id, dto) ? NoContent() : NotFound();
     }
 
-    /// <summary>Удаляет экскурсию без проданных билетов.</summary>
+    /// <summary>
+    /// Удаляет запись экскурсии.
+    /// </summary>
+    /// <param name="id">Идентификатор экскурсии.</param>
+    /// <returns>Ответ без содержимого либо ошибка отсутствия или использования записи.</returns>
     [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public ActionResult Delete(int id)
     {
         logger.LogInformation("Удаление экскурсии {Id}.", id);
-        var excursion = excursions.GetById(id);
-        if (excursion is null) return NotFound();
-        if (tickets.GetAll().Any(ticket => ticket.ExcursionId == id))
-            return Conflict(new { Message = "Нельзя удалить экскурсию, на которую проданы билеты." });
-        DetachExhibitions(excursion);
-        excursions.Delete(id);
-        return NoContent();
+        return service.Delete(id) ? NoContent() : NotFound();
     }
-
-    private List<Exhibition>? ResolveExhibitions(ExcursionCreateUpdateDto dto)
-    {
-        if (dto.ExhibitionIds is null || dto.ExhibitionIds.Count != dto.ExhibitionIds.Distinct().Count())
-            return null;
-        var selected = dto.ExhibitionIds.Select(exhibitions.GetById).ToList();
-        return selected.Any(exhibition => exhibition is null) ? null : selected.Select(exhibition => exhibition!).ToList();
-    }
-
-    private void AttachExhibitions(Excursion excursion, IEnumerable<Exhibition> selected)
-    {
-        foreach (var exhibition in selected)
-        {
-            var link = new ExcursionExhibition
-            {
-                ExcursionId = excursion.Id, Excursion = excursion,
-                ExhibitionId = exhibition.Id, Exhibition = exhibition
-            };
-            excursion.Exhibitions.Add(link);
-            exhibition.ExcursionExhibitions.Add(link);
-            context.ExcursionExhibitions.Add(link);
-        }
-    }
-
-    private void DetachExhibitions(Excursion excursion)
-    {
-        foreach (var link in excursion.Exhibitions)
-        {
-            link.Exhibition.ExcursionExhibitions.Remove(link);
-            context.ExcursionExhibitions.Remove(link);
-        }
-        excursion.Exhibitions.Clear();
-    }
-
-    private static ExcursionsDto Map(Excursion excursion) =>
-        new(excursion.Id, excursion.Date, excursion.Duration,
-            excursion.Exhibitions.Select(link => link.ExhibitionId).ToList());
 }

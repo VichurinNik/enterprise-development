@@ -7,6 +7,7 @@ namespace Museum.Tests;
 /// Содержит тесты для проверки аналитических LINQ-запросов к контексту музея.
 /// Имплементация первичного конструктора (primary constructor).
 /// </summary>
+/// <param name="fixture">Фикстура с тестовыми данными музея.</param>
 public class QueriesTests(MuseumFixture fixture) : IClassFixture<MuseumFixture>
 {
     /// <summary>
