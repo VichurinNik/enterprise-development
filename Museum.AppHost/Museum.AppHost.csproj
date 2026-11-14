@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Sdk Name="Aspire.AppHost.Sdk" Version="13.5.4" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AspireUseCliBundle>true</AspireUseCliBundle>
+    <UserSecretsId>museum-apphost-lab3-vichurin</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.MySql" Version="13.5.4" />
+    <PackageReference Include="MessagePack" Version="2.5.303" />
+    <PackageReference Include="MySqlConnector" Version="2.6.1" />
+    <ProjectReference Include="..\Museum.Api\Museum.Api.csproj" />
+  </ItemGroup>
+</Project>
