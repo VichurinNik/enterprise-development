@@ -243,3 +243,128 @@ Lab1_CorpRaz/
     ├── Fixtures/                  # Фикстуры для тестов (MuseumFixture)
     └── QueriesTests.cs            # LINQ-запросы и проверки аналитики
 ```
+
+## Лабораторная работа №3 — «ORM»
+
+API хранит данные в MySQL 8.4 через Entity Framework Core 10 и провайдер
+`MySql.EntityFrameworkCore`. Коллекции первой лабораторной используются только
+для исходного набора данных и unit-тестов.
+
+### Проекты третьей лабораторной
+
+| Проект | Назначение |
+|---|---|
+| `Museum.Infrastructure.MySql` | Контекст EF Core, настройки таблиц, репозитории и миграции |
+| `Museum.AppHost` | Запуск MySQL и API через Aspire 13.5.4 |
+| `Museum.IntegrationTests` | Проверка REST API на настоящей MySQL |
+
+`MuseumDbContext` описывает пять таблиц. Билет связан с посетителем и экскурсией
+внешними ключами. Таблица `ExcursionExhibitions` хранит связь «многие ко многим»:
+одна экскурсия посещает несколько выставок, а выставка может входить в разные экскурсии.
+Её составной первичный ключ запрещает повтор одной пары идентификаторов.
+
+Удаление посетителя или экскурсии с проданными билетами, а также выставки,
+включённой в экскурсию, возвращает HTTP 409. Изменения одного запроса выполняются
+в транзакции: при ошибке отменяются все изменения запроса.
+Стоимость хранится как `decimal(18,2)`, дата рождения — как `date`,
+продолжительность экскурсии — как число тактов `TimeSpan`.
+
+### Миграции и начальные данные
+
+- `InitialSchema` создаёт таблицы, индексы и внешние ключи.
+- `SeedMuseum` добавляет начальные записи.
+
+| Таблица | Количество записей |
+|---|---:|
+| Exhibitions | 10 |
+| Excursions | 10 |
+| Visitors | 10 |
+| Tickets | 30 |
+| ExcursionExhibitions | 20 |
+
+При запуске API вызывает `Database.MigrateAsync()`. EF Core хранит применённые
+миграции в таблице `__EFMigrationsHistory`, поэтому повторный запуск не повторяет
+заполнение и не сбрасывает внесённые изменения. Данные MySQL сохраняются в Docker volume.
+
+### Запуск через Aspire
+
+Требуются .NET SDK 10 и запущенный Docker Desktop в режиме Linux containers.
+На Windows Docker использует WSL 2 и компонент «Платформа виртуальной машины».
+После установки компонентов Windows может потребоваться перезагрузка.
+
+Из корня репозитория:
+
+```powershell
+dotnet tool restore
+dotnet restore Lab1CorpRaz.sln
+dnx --yes aspire.cli@13.5.4 -- --nologo setup
+dotnet run --project Museum.AppHost
+```
+
+В открывшейся панели Aspire дождитесь готовности `mysql`, `museum` и `api`.
+Ссылка **Scalar** у ресурса `api` открывает документацию и форму отправки запросов.
+API ожидает готовности базы перед запуском. Адрес и пароль подключения передаёт Aspire;
+пароль не записывается в исходный код.
+
+Для остановки используйте Ctrl+C в терминале запуска либо:
+
+```powershell
+dnx --yes aspire.cli@13.5.4 -- --nologo stop --apphost Museum.AppHost/Museum.AppHost.csproj
+```
+
+Версия Aspire 13.5.4 закреплена по требованиям лабораторной.
+NuGet сообщает для неё предупреждение NU1903:
+[описание уязвимости Aspire](https://github.com/advisories/GHSA-f7vh-h5g3-7jrh).
+Исправление выпущено в версии 13.6.5. Предупреждение не подавлено.
+
+### Запуск API с уже работающей MySQL
+
+Создайте базу `museum` и задайте строку подключения в текущем терминале.
+Учётная запись должна иметь права на применение миграций:
+
+```powershell
+$env:ConnectionStrings__museum = 'Server=localhost;Port=3306;Database=museum;User ID=root;Password=ВАШ_ПАРОЛЬ;SslMode=Required'
+dotnet run --project Museum.Api --launch-profile http
+```
+
+Scalar: `http://localhost:5027/scalar/v1`.
+Проверка доступности API и базы: `http://localhost:5027/health`.
+
+### Проверки
+
+Unit-тесты первой лабораторной не требуют базы:
+
+```powershell
+dotnet test Museum.Tests/Museum.Tests.csproj
+```
+
+Интеграционные тесты требуют отдельный тестовый сервер MySQL и учётную запись
+с правами создания и удаления баз. Каждый тест создаёт базу с уникальным именем
+`museum_tests_<идентификатор>` и удаляет только её после завершения:
+
+```powershell
+$env:MYSQL_TEST_CONNECTION = 'Server=localhost;Port=3306;User ID=root;Password=ВАШ_ТЕСТОВЫЙ_ПАРОЛЬ;SslMode=Required'
+dotnet test Museum.IntegrationTests/Museum.IntegrationTests.csproj
+```
+
+Проверяются миграции и начальные данные, CRUD всех сущностей, ограничения связей,
+пять аналитических запросов, сохранение данных после перезапуска API и откат
+транзакции при ошибке после записи в базу.
+
+GitHub Actions запускает обе группы тестов с отдельным контейнером MySQL,
+а также проверяет соответствие модели миграциям.
+Конфигурация находится в `.github/workflows/build-and-test.yml`.
+
+Проверка миграций вручную:
+
+```powershell
+dotnet ef migrations has-pending-model-changes --project Museum.Infrastructure.MySql --startup-project Museum.Infrastructure.MySql
+```
+
+После изменения модели новую миграцию можно создать командой:
+
+```powershell
+dotnet ef migrations add НазваниеИзменения --project Museum.Infrastructure.MySql --startup-project Museum.Infrastructure.MySql
+```
+
+RabbitMQ и сервис генерации данных относятся к следующей лабораторной работе.
