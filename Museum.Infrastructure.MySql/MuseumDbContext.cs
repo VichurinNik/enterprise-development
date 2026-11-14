@@ -37,6 +37,8 @@ public sealed class MuseumDbContext(DbContextOptions<MuseumDbContext> options) :
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        MuseumSeedConfiguration.Apply(modelBuilder);
+
         modelBuilder.Entity<Exhibition>(entity =>
         {
             entity.HasKey(item => item.Id);
