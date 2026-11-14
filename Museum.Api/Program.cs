@@ -30,6 +30,7 @@ builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IExcursionService, ExcursionService>();
 builder.Services.AddScoped<IExhibitionService, ExhibitionService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+builder.Services.AddHealthChecks().AddCheck<MuseumDatabaseHealthCheck>("mysql");
 
 var app = builder.Build();
 
@@ -49,6 +50,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();
