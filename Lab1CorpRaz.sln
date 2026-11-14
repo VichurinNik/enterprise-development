@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum.Api", "Museum.Api\Mu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum.Shared", "Museum.Shared\Museum.Shared.csproj", "{0D68EC1E-22B1-4174-A44B-B304F2D4A0A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum.Infrastructure.MySql", "Museum.Infrastructure.MySql\Museum.Infrastructure.MySql.csproj", "{88414EDD-BBC3-4C27-99F1-96D587ED40D1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +101,18 @@ Global
 		{0D68EC1E-22B1-4174-A44B-B304F2D4A0A4}.Release|x64.Build.0 = Release|Any CPU
 		{0D68EC1E-22B1-4174-A44B-B304F2D4A0A4}.Release|x86.ActiveCfg = Release|Any CPU
 		{0D68EC1E-22B1-4174-A44B-B304F2D4A0A4}.Release|x86.Build.0 = Release|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Debug|x64.Build.0 = Debug|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Debug|x86.Build.0 = Debug|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Release|x64.ActiveCfg = Release|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Release|x64.Build.0 = Release|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Release|x86.ActiveCfg = Release|Any CPU
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -110,6 +124,7 @@ Global
 		{313DA2B3-E686-4720-9880-ECFF7593A424} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{6B9E1436-C567-4510-9723-56FD43886A2E} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{0D68EC1E-22B1-4174-A44B-B304F2D4A0A4} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{88414EDD-BBC3-4C27-99F1-96D587ED40D1} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A92BC7C6-8EFB-43A0-A251-F9260E7FB165}
