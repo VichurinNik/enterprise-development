@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
 using Museum.Application.Exceptions;
+using MySql.Data.MySqlClient;
 
 namespace Museum.Api;
 
@@ -18,6 +20,10 @@ public sealed class ApiExceptionFilter(ILogger<ApiExceptionFilter> logger) : IEx
     {
         var (status, title) = context.Exception switch
         {
+            DbUpdateException { InnerException: MySqlException { Number: 1062 or 1451 or 1452 } } =>
+                (StatusCodes.Status409Conflict, "Конфликт связанных данных"),
+            DbUpdateException { InnerException: MySqlException { Number: 1048 or 1264 or 1406 } } =>
+                (StatusCodes.Status400BadRequest, "Данные не соответствуют ограничениям таблицы"),
             EntityInUseException => (StatusCodes.Status409Conflict, "Запись используется"),
             ArgumentException => (StatusCodes.Status400BadRequest, "Некорректный запрос"),
             KeyNotFoundException => (StatusCodes.Status404NotFound, "Запись не найдена"),
@@ -39,7 +45,7 @@ public sealed class ApiExceptionFilter(ILogger<ApiExceptionFilter> logger) : IEx
             Title = title,
             Detail = status == StatusCodes.Status500InternalServerError
                 ? "Не удалось обработать запрос."
-                : context.Exception.Message
+                : context.Exception is DbUpdateException ? title : context.Exception.Message
         }) { StatusCode = status };
         context.ExceptionHandled = true;
     }

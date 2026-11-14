@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ApiExceptionFilter>();
+    options.Filters.Add<DatabaseTransactionFilter>();
 });
 builder.Services.AddOpenApi();
 
