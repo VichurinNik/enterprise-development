@@ -38,8 +38,10 @@ public class TicketService(
             TicketType = dto.TicketType,
             Price = dto.Price
         });
-        excursion.Tickets.Add(ticket);
-        visitor.Tickets.Add(ticket);
+        if (!excursion.Tickets.Contains(ticket))
+            excursion.Tickets.Add(ticket);
+        if (!visitor.Tickets.Contains(ticket))
+            visitor.Tickets.Add(ticket);
         return MapToDto(ticket);
     }
 
@@ -61,8 +63,10 @@ public class TicketService(
         ticket.Visitor = visitor;
         ticket.TicketType = dto.TicketType;
         ticket.Price = dto.Price;
-        excursion.Tickets.Add(ticket);
-        visitor.Tickets.Add(ticket);
+        if (!excursion.Tickets.Contains(ticket))
+            excursion.Tickets.Add(ticket);
+        if (!visitor.Tickets.Contains(ticket))
+            visitor.Tickets.Add(ticket);
         return tickets.Update(ticket);
     }
 

@@ -1,32 +1,28 @@
+using Microsoft.EntityFrameworkCore;
 using Museum.Application.Repositories;
 using Museum.Application.Services;
 using Museum.Api;
-using Museum.Domain.Data;
-using Museum.Domain.Entities;
+using Museum.Infrastructure.MySql;
+using Museum.Infrastructure.MySql.Repositories;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers(options => options.Filters.Add<ApiExceptionFilter>());
-
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ApiExceptionFilter>();
+});
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton(DataSeeder.Seed());
-
-builder.Services.AddSingleton<IRepository<Exhibition>>(sp =>
-    new InMemoryRepository<Exhibition>(sp.GetRequiredService<MuseumContext>().Exhibitions));
-
-builder.Services.AddSingleton<IRepository<Excursion>>(sp =>
-    new InMemoryRepository<Excursion>(sp.GetRequiredService<MuseumContext>().Excursions));
-
-builder.Services.AddSingleton<IRepository<Visitor>>(sp =>
-    new InMemoryRepository<Visitor>(sp.GetRequiredService<MuseumContext>().Visitors));
-
-builder.Services.AddSingleton<IRepository<Ticket>>(sp =>
-    new InMemoryRepository<Ticket>(sp.GetRequiredService<MuseumContext>().Tickets));
-
-builder.Services.AddSingleton<IExcursionExhibitionRepository>(sp =>
-    new InMemoryExcursionExhibitionRepository(sp.GetRequiredService<MuseumContext>().ExcursionExhibitions));
+builder.Services.AddDbContext<MuseumDbContext>((services, options) =>
+{
+    var connectionString = services.GetRequiredService<IConfiguration>().GetConnectionString("museum")
+        ?? throw new InvalidOperationException(
+            "Не задано подключение museum. Запустите Museum.AppHost или задайте ConnectionStrings__museum.");
+    options.UseMySQL(connectionString);
+});
+builder.Services.AddScoped(typeof(IRepository<>), typeof(MySqlRepository<>));
+builder.Services.AddScoped<IExcursionExhibitionRepository, MySqlExcursionExhibitionRepository>();
 
 builder.Services.AddScoped<IVisitorService, VisitorService>();
 builder.Services.AddScoped<ITicketService, TicketService>();
@@ -35,6 +31,12 @@ builder.Services.AddScoped<IExhibitionService, ExhibitionService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
 
 var app = builder.Build();
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var database = scope.ServiceProvider.GetRequiredService<MuseumDbContext>();
+    await database.Database.MigrateAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {

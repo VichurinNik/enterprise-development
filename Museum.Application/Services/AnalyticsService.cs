@@ -58,10 +58,11 @@ public class AnalyticsService(
     public IReadOnlyList<ExcursionParticipantsDto> GetExcursionsWithMinimumParticipants()
     {
         logger.LogInformation("Формирование списка экскурсий с минимальным количеством участников.");
+        var tickets = ticketRepo.GetAll();
         var counts = excursionRepo.GetAll()
             .Select(excursion => new ExcursionParticipantsDto(
                 excursion.Id,
-                ticketRepo.GetAll().Where(ticket => ticket.ExcursionId == excursion.Id)
+                tickets.Where(ticket => ticket.ExcursionId == excursion.Id)
                     .Select(ticket => ticket.VisitorId).Distinct().Count()))
             .ToList();
         var minimum = counts.Select(item => item.ParticipantCount).DefaultIfEmpty(0).Min();
@@ -77,6 +78,7 @@ public class AnalyticsService(
         if (start > end)
             throw new ArgumentException("Дата начала периода должна быть не позже даты окончания.");
 
+        var tickets = ticketRepo.GetAll();
         return excursionRepo.GetAll()
             .Where(excursion => excursion.Date.Date >= start.Date && excursion.Date.Date <= end.Date)
             .SelectMany(excursion => excursion.Exhibitions.Select(link => new { excursion, link }))
@@ -86,10 +88,10 @@ public class AnalyticsService(
                 group.Key,
                 group.Select(item => item.link.ExhibitionId).Distinct().Count(),
                 group.Select(item => item.excursion.Id).Distinct().Count(),
-                group.SelectMany(item => ticketRepo.GetAll()
+                group.SelectMany(item => tickets
                     .Where(ticket => ticket.ExcursionId == item.excursion.Id))
                     .Select(ticket => ticket.VisitorId).Distinct().Count(),
-                group.SelectMany(item => ticketRepo.GetAll()
+                group.SelectMany(item => tickets
                     .Where(ticket => ticket.ExcursionId == item.excursion.Id))
                     .DistinctBy(ticket => ticket.Id).Sum(ticket => ticket.Price)))
             .ToList();
