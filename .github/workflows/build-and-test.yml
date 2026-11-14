@@ -9,6 +9,21 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: museum_ci_password
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pmuseum_ci_password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    env:
+      MYSQL_TEST_CONNECTION: Server=127.0.0.1;Port=3306;User ID=root;Password=museum_ci_password;SslMode=Required
 
     steps:
       - name: Checkout
@@ -25,5 +40,13 @@ jobs:
       - name: Build
         run: dotnet build Lab1CorpRaz.sln --no-restore
 
-      - name: Test
-        run: dotnet test Lab1CorpRaz.sln --logger "console;verbosity=detailed"
+      - name: Unit tests
+        run: dotnet test Museum.Tests/Museum.Tests.csproj --no-build
+
+      - name: MySQL integration tests
+        run: dotnet test Museum.IntegrationTests/Museum.IntegrationTests.csproj --no-build
+
+      - name: Check migrations
+        run: |
+          dotnet tool restore
+          dotnet ef migrations has-pending-model-changes --project Museum.Infrastructure.MySql --startup-project Museum.Infrastructure.MySql --no-build
