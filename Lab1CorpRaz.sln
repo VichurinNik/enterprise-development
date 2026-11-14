@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum.Infrastructure.MySql
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum.AppHost", "Museum.AppHost\Museum.AppHost.csproj", "{ADF8F989-D12A-4306-9F5E-593F9519F87D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum.IntegrationTests", "Museum.IntegrationTests\Museum.IntegrationTests.csproj", "{915CEBFF-6FCD-4479-967F-53157059F95D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +129,18 @@ Global
 		{ADF8F989-D12A-4306-9F5E-593F9519F87D}.Release|x64.Build.0 = Release|Any CPU
 		{ADF8F989-D12A-4306-9F5E-593F9519F87D}.Release|x86.ActiveCfg = Release|Any CPU
 		{ADF8F989-D12A-4306-9F5E-593F9519F87D}.Release|x86.Build.0 = Release|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Debug|x64.Build.0 = Debug|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Debug|x86.Build.0 = Debug|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Release|x64.ActiveCfg = Release|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Release|x64.Build.0 = Release|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Release|x86.ActiveCfg = Release|Any CPU
+		{915CEBFF-6FCD-4479-967F-53157059F95D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -140,6 +154,7 @@ Global
 		{0D68EC1E-22B1-4174-A44B-B304F2D4A0A4} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{88414EDD-BBC3-4C27-99F1-96D587ED40D1} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{ADF8F989-D12A-4306-9F5E-593F9519F87D} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{915CEBFF-6FCD-4479-967F-53157059F95D} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A92BC7C6-8EFB-43A0-A251-F9260E7FB165}
