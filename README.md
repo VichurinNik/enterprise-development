@@ -337,12 +337,11 @@ Unit-тесты первой лабораторной не требуют баз
 dotnet test Museum.Tests/Museum.Tests.csproj
 ```
 
-Интеграционные тесты требуют отдельный тестовый сервер MySQL и учётную запись
-с правами создания и удаления баз. Каждый тест создаёт базу с уникальным именем
-`museum_tests_<идентификатор>` и удаляет только её после завершения:
+Интеграционные тесты запускают API и отдельный контейнер MySQL через Aspire.
+Для запуска нужен работающий Docker. Тестовый AppHost отключает постоянный том,
+поэтому тесты используют свои данные. Строку подключения Aspire передаёт автоматически.
 
 ```powershell
-$env:MYSQL_TEST_CONNECTION = 'Server=localhost;Port=3306;User ID=root;Password=ВАШ_ТЕСТОВЫЙ_ПАРОЛЬ;SslMode=Required'
 dotnet test Museum.IntegrationTests/Museum.IntegrationTests.csproj
 ```
 
@@ -350,7 +349,7 @@ dotnet test Museum.IntegrationTests/Museum.IntegrationTests.csproj
 пять аналитических запросов, сохранение данных после перезапуска API и откат
 транзакции при ошибке после записи в базу.
 
-GitHub Actions запускает обе группы тестов с отдельным контейнером MySQL,
+GitHub Actions запускает обе группы тестов, включая интеграционные тесты через Aspire,
 а также проверяет соответствие модели миграциям.
 Конфигурация находится в `.github/workflows/build-and-test.yml`.
 

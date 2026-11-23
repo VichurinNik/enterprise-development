@@ -1,11 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 using System.Net;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
+using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Museum.Contracts.Analytics;
 using Museum.Contracts.Excursions;
@@ -14,58 +12,45 @@ using Museum.Contracts.Tickets;
 using Museum.Contracts.Visitors;
 using Museum.Infrastructure.MySql;
 using Museum.Shared.Enums;
-using MySqlConnector;
 
 namespace Museum.IntegrationTests;
 
 public sealed class MuseumApiTests : IAsyncLifetime
 {
-    private readonly string databaseName = $"museum_tests_{Guid.NewGuid():N}";
-    private string serverConnection = "";
-    private string databaseConnection = "";
-    private MuseumFactory factory = null!;
+    private DistributedApplication? app;
+    private string databaseConnection = null!;
     private HttpClient client = null!;
 
     public async ValueTask InitializeAsync()
     {
-        serverConnection = Environment.GetEnvironmentVariable("MYSQL_TEST_CONNECTION")
-            ?? throw new InvalidOperationException(
-                "Для интеграционных тестов задайте MYSQL_TEST_CONNECTION к тестовому серверу MySQL.");
-        var builder = new MySqlConnectionStringBuilder(serverConnection) { Database = "" };
-        serverConnection = builder.ConnectionString;
-        await using var connection = new MySqlConnection(serverConnection);
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText = $"CREATE DATABASE `{databaseName}` CHARACTER SET utf8mb4";
-        await command.ExecuteNonQueryAsync();
-        builder.Database = databaseName;
-        databaseConnection = builder.ConnectionString;
-        factory = new MuseumFactory(databaseConnection);
-        client = factory.CreateClient();
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromMinutes(3));
+
+        var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.Museum_AppHost>(
+            ["Testing:DisableDataVolume=true"], timeout.Token);
+        app = await builder.BuildAsync(timeout.Token);
+        await app.StartAsync(timeout.Token);
+        await app.ResourceNotifications.WaitForResourceHealthyAsync("api", timeout.Token);
+        databaseConnection = await app.GetConnectionStringAsync("museum", timeout.Token)
+            ?? throw new InvalidOperationException("Aspire не передал подключение к тестовой базе.");
+        client = app.CreateHttpClient("api");
     }
 
     public async ValueTask DisposeAsync()
     {
         client?.Dispose();
-        if (factory is not null)
-            await factory.DisposeAsync();
-
-        if (serverConnection.Length == 0)
-            return;
-
-        MySqlConnection.ClearAllPools();
-        await using var connection = new MySqlConnection(serverConnection);
-        await connection.OpenAsync();
-        await using var command = connection.CreateCommand();
-        command.CommandText = $"DROP DATABASE IF EXISTS `{databaseName}`";
-        await command.ExecuteNonQueryAsync();
+        if (app is not null)
+            await app.DisposeAsync();
     }
+
+    private MuseumDbContext CreateDatabaseContext() => new(
+        new DbContextOptionsBuilder<MuseumDbContext>()
+            .UseMySql(databaseConnection, new MySqlServerVersion(new Version(8, 4))).Options);
 
     [Fact]
     public async Task Migrations_CreateTablesAndSeedOnlyOnce()
     {
-        using var scope = factory.Services.CreateScope();
-        var database = scope.ServiceProvider.GetRequiredService<MuseumDbContext>();
+        await using var database = CreateDatabaseContext();
         await database.Database.MigrateAsync(cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(2, (await database.Database.GetAppliedMigrationsAsync(cancellationToken: TestContext.Current.CancellationToken)).Count());
         Assert.Empty(await database.Database.GetPendingMigrationsAsync(cancellationToken: TestContext.Current.CancellationToken));
@@ -92,6 +77,8 @@ public sealed class MuseumApiTests : IAsyncLifetime
 
         var ticket = await Post<TicketDto>("/api/tickets",
             new TicketCreateUpdateDto(excursion.Id, visitor.Id, TicketType.Adult, 1234.56m));
+
+        Assert.Equal(TicketType.Adult, ticket.TicketType);
 
         foreach (var route in new[] { $"visitors/{visitor.Id}", $"excursions/{excursion.Id}", $"exhibitions/{exhibition.Id}" })
             Assert.Equal(HttpStatusCode.Conflict, (await client.DeleteAsync($"/api/{route}", cancellationToken: TestContext.Current.CancellationToken)).StatusCode);
@@ -134,7 +121,12 @@ public sealed class MuseumApiTests : IAsyncLifetime
         var response = await client.PutAsJsonAsync("/api/tickets/1",
             new TicketCreateUpdateDto(1, int.MaxValue, TicketType.Adult, 999m), cancellationToken: TestContext.Current.CancellationToken);
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal(original, await client.GetFromJsonAsync<TicketDto>("/api/tickets/1", cancellationToken: TestContext.Current.CancellationToken));
+        var unchangedTicket = await client.GetFromJsonAsync<TicketDto>("/api/tickets/1",
+            cancellationToken: TestContext.Current.CancellationToken);
+        Assert.NotNull(original);
+        Assert.NotNull(unchangedTicket);
+        Assert.Equal(original.Price, unchangedTicket.Price);
+        Assert.Equal(original.TicketType, unchangedTicket.TicketType);
 
         var excursion = await client.GetFromJsonAsync<ExcursionsDto>("/api/excursions/1", cancellationToken: TestContext.Current.CancellationToken);
         response = await client.PutAsJsonAsync("/api/excursions/1",
@@ -176,10 +168,12 @@ public sealed class MuseumApiTests : IAsyncLifetime
     {
         var visitor = await Post<VisitorDto>("/api/visitors",
             new VisitorCreateUpdateDto("Сохранённый посетитель", "+79001234567", new DateOnly(1995, 3, 1)));
-        client.Dispose();
-        await factory.DisposeAsync();
-        factory = new MuseumFactory(databaseConnection);
-        client = factory.CreateClient();
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(60));
+        var commands = app!.Services.GetRequiredService<ResourceCommandService>();
+        var result = await commands.ExecuteCommandAsync("api", KnownResourceCommands.RestartCommand, timeout.Token);
+        Assert.True(result.Success);
+        await app.ResourceNotifications.WaitForResourceHealthyAsync("api", timeout.Token);
         Assert.Equal(visitor, await client.GetFromJsonAsync<VisitorDto>($"/api/visitors/{visitor.Id}", cancellationToken: TestContext.Current.CancellationToken));
         Assert.Equal(11, (await client.GetFromJsonAsync<List<VisitorDto>>("/api/visitors", cancellationToken: TestContext.Current.CancellationToken))!.Count);
     }
@@ -187,19 +181,25 @@ public sealed class MuseumApiTests : IAsyncLifetime
     [Fact]
     public async Task FailedRequest_RollsBackAlreadySavedChanges()
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/visitors")
-        {
-            Content = JsonContent.Create(new VisitorCreateUpdateDto(
-                "Отменённая запись", "+79001234567", new DateOnly(2000, 1, 1)))
-        };
-        request.Headers.Add("X-Test-Fail-After-Save", "true");
-        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await using var database = CreateDatabaseContext();
+        await database.Database.ExecuteSqlRawAsync(
+            """
+            CREATE TRIGGER RejectExcursionLink
+            BEFORE INSERT ON ExcursionExhibitions
+            FOR EACH ROW
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Integration test rejected the link'
+            """, cancellationToken);
+
+        using var response = await client.PostAsJsonAsync("/api/excursions",
+            new ExcursionCreateUpdateDto(new DateTime(2026, 11, 15, 12, 0, 0),
+                TimeSpan.FromMinutes(60), [1]), cancellationToken);
+
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-        var visitors = await client.GetFromJsonAsync<List<VisitorDto>>(
-            "/api/visitors", TestContext.Current.CancellationToken);
-        Assert.Equal(10, visitors!.Count);
-        Assert.DoesNotContain(visitors, item => item.FullName == "Отменённая запись");
+        Assert.Equal(10, await database.Excursions.CountAsync(cancellationToken));
+        Assert.Equal(20, await database.ExcursionExhibitions.CountAsync(cancellationToken));
     }
+
     private async Task<T> Post<T>(string route, object value)
     {
         var response = await client.PostAsJsonAsync(route, value, cancellationToken: TestContext.Current.CancellationToken);
@@ -208,24 +208,4 @@ public sealed class MuseumApiTests : IAsyncLifetime
         return (await response.Content.ReadFromJsonAsync<T>(cancellationToken: TestContext.Current.CancellationToken))!;
     }
 
-    private sealed class FailAfterSaveFilter : IAsyncActionFilter
-    {
-        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-        {
-            var result = await next();
-            if (result.Exception is null && context.HttpContext.Request.Headers.ContainsKey("X-Test-Fail-After-Save"))
-                throw new InvalidOperationException("Ошибка после сохранения для проверки отката транзакции.");
-        }
-    }
-    private sealed class MuseumFactory(string connectionString) : WebApplicationFactory<Program>
-    {
-        protected override void ConfigureWebHost(IWebHostBuilder builder)
-        {
-            builder.UseEnvironment("Development");
-            builder.ConfigureServices(services => services.Configure<MvcOptions>(
-                options => options.Filters.Add<FailAfterSaveFilter>(order: 1)));
-            builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
-                new Dictionary<string, string?> { ["ConnectionStrings:museum"] = connectionString }));
-        }
-    }
 }

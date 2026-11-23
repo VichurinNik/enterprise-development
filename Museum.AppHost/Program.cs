@@ -1,8 +1,11 @@
+using Microsoft.Extensions.Configuration;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
-var mysql = builder.AddMySql("mysql")
-    .WithImageTag("8.4")
-    .WithDataVolume();
+var mysql = builder.AddMySql("mysql").WithImageTag("8.4");
+
+if (!builder.Configuration.GetValue<bool>("Testing:DisableDataVolume"))
+    mysql.WithDataVolume();
 
 var museum = mysql.AddDatabase("museum");
 

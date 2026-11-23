@@ -11,8 +11,10 @@
   <ItemGroup>
     <PackageReference Include="xunit.v3" Version="3.1.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.12" />
-    <ProjectReference Include="..\Museum.Api\Museum.Api.csproj" />
+    <PackageReference Include="Aspire.Hosting.Testing" Version="13.5.4" />
+    <ProjectReference Include="..\Museum.AppHost\Museum.AppHost.csproj" />
+    <ProjectReference Include="..\Museum.Contracts\Museum.Contracts.csproj" />
+    <ProjectReference Include="..\Museum.Infrastructure.MySql\Museum.Infrastructure.MySql.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

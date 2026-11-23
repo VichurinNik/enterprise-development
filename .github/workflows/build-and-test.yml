@@ -9,22 +9,6 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql:8.4
-        env:
-          MYSQL_ROOT_PASSWORD: museum_ci_password
-          MYSQL_ROOT_HOST: '%'
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h localhost -pmuseum_ci_password"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=10
-    env:
-      MYSQL_TEST_CONNECTION: Server=127.0.0.1;Port=3306;User ID=root;Password=museum_ci_password;SslMode=Required
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,7 +27,10 @@ jobs:
       - name: Unit tests
         run: dotnet test Museum.Tests/Museum.Tests.csproj --no-build
 
-      - name: MySQL integration tests
+      - name: Set up Aspire
+        run: dnx --yes aspire.cli@13.5.4 -- --nologo setup
+
+      - name: MySQL integration tests through Aspire
         run: dotnet test Museum.IntegrationTests/Museum.IntegrationTests.csproj --no-build
 
       - name: Check migrations
