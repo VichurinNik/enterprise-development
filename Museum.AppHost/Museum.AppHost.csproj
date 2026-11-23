@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.MySql" Version="13.5.4" />
+    <!-- Исправленные версии транзитивных зависимостей Aspire 13.5.4 (NU1902). -->
     <PackageReference Include="MessagePack" Version="2.5.303" />
     <PackageReference Include="MySqlConnector" Version="2.6.1" />
     <ProjectReference Include="..\Museum.Api\Museum.Api.csproj" />
