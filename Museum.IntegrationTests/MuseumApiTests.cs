@@ -170,18 +170,19 @@ public sealed class MuseumApiTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task Restart_PreservesCreatedData()
+    public async Task SecondApiStartup_PreservesCreatedData()
     {
         var visitor = await Post<VisitorDto>("/api/visitors",
             new VisitorCreateUpdateDto("Сохранённый посетитель", "+79001234567", new DateOnly(1995, 3, 1)));
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(60));
         var commands = app!.Services.GetRequiredService<ResourceCommandService>();
-        var result = await commands.ExecuteCommandAsync("api", KnownResourceCommands.RestartCommand, timeout.Token);
-        Assert.True(result.Success);
-        await app.ResourceNotifications.WaitForResourceHealthyAsync("api", timeout.Token);
-        Assert.Equal(visitor, await client.GetFromJsonAsync<VisitorDto>($"/api/visitors/{visitor.Id}", cancellationToken: TestContext.Current.CancellationToken));
-        Assert.Equal(11, (await client.GetFromJsonAsync<List<VisitorDto>>("/api/visitors", cancellationToken: TestContext.Current.CancellationToken))!.Count);
+        var result = await commands.ExecuteCommandAsync("api-second", KnownResourceCommands.StartCommand, timeout.Token);
+        Assert.True(result.Success, result.Message);
+        await app.ResourceNotifications.WaitForResourceHealthyAsync("api-second", timeout.Token);
+        using var secondClient = app.CreateHttpClient("api-second");
+        Assert.Equal(visitor, await secondClient.GetFromJsonAsync<VisitorDto>($"/api/visitors/{visitor.Id}", timeout.Token));
+        Assert.Equal(11, (await secondClient.GetFromJsonAsync<List<VisitorDto>>("/api/visitors", timeout.Token))!.Count);
     }
 
     [Fact]
