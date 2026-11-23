@@ -13,40 +13,42 @@ public sealed class MySqlRepository<TEntity>(MuseumDbContext context) : IReposit
     where TEntity : class, IEntity
 {
     /// <inheritdoc />
-    public IReadOnlyList<TEntity> GetAll() => Query().OrderBy(entity => entity.Id).ToList();
+    public async Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken cancellationToken) =>
+        await Query().OrderBy(entity => entity.Id).ToListAsync(cancellationToken);
 
     /// <inheritdoc />
-    public TEntity? GetById(int id) => Query().SingleOrDefault(entity => entity.Id == id);
+    public async Task<TEntity?> GetByIdAsync(int id, CancellationToken cancellationToken) =>
+        await Query().SingleOrDefaultAsync(entity => entity.Id == id, cancellationToken);
 
     /// <inheritdoc />
-    public TEntity Create(TEntity entity)
+    public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken)
     {
         context.Set<TEntity>().Add(entity);
-        context.SaveChanges();
+        await context.SaveChangesAsync(cancellationToken);
         return entity;
     }
 
     /// <inheritdoc />
-    public bool Update(TEntity entity)
+    public async Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken)
     {
-        var existing = context.Set<TEntity>().Find(entity.Id);
+        var existing = await context.Set<TEntity>().FindAsync([entity.Id], cancellationToken);
         if (existing is null)
             return false;
 
         context.Entry(existing).CurrentValues.SetValues(entity);
-        context.SaveChanges();
+        await context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     /// <inheritdoc />
-    public void Delete(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        var entity = context.Set<TEntity>().Find(id);
+        var entity = await context.Set<TEntity>().FindAsync([id], cancellationToken);
         if (entity is null)
             return;
 
         context.Set<TEntity>().Remove(entity);
-        context.SaveChanges();
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     private IQueryable<TEntity> Query()

@@ -12,7 +12,7 @@ public sealed class InMemoryExcursionExhibitionRepository(List<ExcursionExhibiti
         items, link => (link.ExcursionId, link.ExhibitionId)), IExcursionExhibitionRepository
 {
     /// <inheritdoc />
-    public override ExcursionExhibition Create(ExcursionExhibition entity)
+    protected override ExcursionExhibition Create(ExcursionExhibition entity)
     {
         var created = base.Create(entity);
         Attach(created);
@@ -20,7 +20,7 @@ public sealed class InMemoryExcursionExhibitionRepository(List<ExcursionExhibiti
     }
 
     /// <inheritdoc />
-    public override bool Update(ExcursionExhibition entity)
+    protected override bool Update(ExcursionExhibition entity)
     {
         var existing = GetById((entity.ExcursionId, entity.ExhibitionId));
         if (existing is null)
@@ -33,7 +33,7 @@ public sealed class InMemoryExcursionExhibitionRepository(List<ExcursionExhibiti
     }
 
     /// <inheritdoc />
-    public override void Delete((int ExcursionId, int ExhibitionId) id)
+    protected override void Delete((int ExcursionId, int ExhibitionId) id)
     {
         if (GetById(id) is { } existing)
             Detach(existing);
@@ -42,12 +42,17 @@ public sealed class InMemoryExcursionExhibitionRepository(List<ExcursionExhibiti
     }
 
     /// <inheritdoc />
-    public bool ExistsForExhibition(int exhibitionId) =>
-        GetAll().Any(link => link.ExhibitionId == exhibitionId);
+    public Task<bool> ExistsForExhibitionAsync(int exhibitionId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(GetAll().Any(link => link.ExhibitionId == exhibitionId));
+    }
 
     /// <inheritdoc />
-    public void ReplaceForExcursion(Excursion excursion, IReadOnlyList<Exhibition> exhibitions)
+    public Task ReplaceForExcursionAsync(Excursion excursion, IReadOnlyList<Exhibition> exhibitions,
+        CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         RemoveForExcursion(excursion);
         foreach (var exhibition in exhibitions)
         {
@@ -59,10 +64,19 @@ public sealed class InMemoryExcursionExhibitionRepository(List<ExcursionExhibiti
                 Exhibition = exhibition
             });
         }
+
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public void RemoveForExcursion(Excursion excursion)
+    public Task RemoveForExcursionAsync(Excursion excursion, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        RemoveForExcursion(excursion);
+        return Task.CompletedTask;
+    }
+
+    private void RemoveForExcursion(Excursion excursion)
     {
         foreach (var link in GetAll().Where(link => link.ExcursionId == excursion.Id).ToArray())
             Delete((link.ExcursionId, link.ExhibitionId));

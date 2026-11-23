@@ -12,52 +12,54 @@ public sealed class MySqlExcursionExhibitionRepository(MuseumDbContext context)
     : IExcursionExhibitionRepository
 {
     /// <inheritdoc />
-    public IReadOnlyList<ExcursionExhibition> GetAll() =>
-        context.ExcursionExhibitions.OrderBy(link => link.ExcursionId).ThenBy(link => link.ExhibitionId).ToList();
+    public async Task<IReadOnlyList<ExcursionExhibition>> GetAllAsync(CancellationToken cancellationToken) =>
+        await context.ExcursionExhibitions.OrderBy(link => link.ExcursionId).ThenBy(link => link.ExhibitionId)
+            .ToListAsync(cancellationToken);
 
     /// <inheritdoc />
-    public ExcursionExhibition? GetById((int ExcursionId, int ExhibitionId) id) =>
-        context.ExcursionExhibitions.Find(id.ExcursionId, id.ExhibitionId);
+    public async Task<ExcursionExhibition?> GetByIdAsync(
+        (int ExcursionId, int ExhibitionId) id, CancellationToken cancellationToken) =>
+        await context.ExcursionExhibitions.FindAsync([id.ExcursionId, id.ExhibitionId], cancellationToken);
 
     /// <inheritdoc />
-    public ExcursionExhibition Create(ExcursionExhibition entity)
+    public async Task<ExcursionExhibition> CreateAsync(ExcursionExhibition entity, CancellationToken cancellationToken)
     {
         context.ExcursionExhibitions.Add(entity);
-        context.SaveChanges();
+        await context.SaveChangesAsync(cancellationToken);
         return entity;
     }
 
     /// <inheritdoc />
-    public bool Update(ExcursionExhibition entity)
+    public async Task<bool> UpdateAsync(ExcursionExhibition entity, CancellationToken cancellationToken)
     {
-        var existing = GetById((entity.ExcursionId, entity.ExhibitionId));
+        var existing = await GetByIdAsync((entity.ExcursionId, entity.ExhibitionId), cancellationToken);
         if (existing is null)
             return false;
 
         context.Entry(existing).CurrentValues.SetValues(entity);
-        context.SaveChanges();
+        await context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     /// <inheritdoc />
-    public void Delete((int ExcursionId, int ExhibitionId) id)
+    public async Task DeleteAsync((int ExcursionId, int ExhibitionId) id, CancellationToken cancellationToken)
     {
-        var existing = GetById(id);
+        var existing = await GetByIdAsync(id, cancellationToken);
         if (existing is null)
             return;
 
         context.ExcursionExhibitions.Remove(existing);
-        context.SaveChanges();
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public bool ExistsForExhibition(int exhibitionId) =>
-        context.ExcursionExhibitions.Any(link => link.ExhibitionId == exhibitionId);
+    public Task<bool> ExistsForExhibitionAsync(int exhibitionId, CancellationToken cancellationToken) =>
+        context.ExcursionExhibitions.AnyAsync(link => link.ExhibitionId == exhibitionId, cancellationToken);
 
     /// <inheritdoc />
-    public void ReplaceForExcursion(Excursion excursion, IReadOnlyList<Exhibition> exhibitions)
+    public async Task ReplaceForExcursionAsync(Excursion excursion, IReadOnlyList<Exhibition> exhibitions, CancellationToken cancellationToken)
     {
-        context.Entry(excursion).Collection(item => item.Exhibitions).Load();
+        await context.Entry(excursion).Collection(item => item.Exhibitions).LoadAsync(cancellationToken);
         var selectedIds = exhibitions.Select(item => item.Id).ToHashSet();
         var existingIds = excursion.Exhibitions.Select(link => link.ExhibitionId).ToHashSet();
         var removed = excursion.Exhibitions.Where(link => !selectedIds.Contains(link.ExhibitionId)).ToList();
@@ -74,14 +76,15 @@ public sealed class MySqlExcursionExhibitionRepository(MuseumDbContext context)
             });
         }
 
-        context.SaveChanges();
+        await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public void RemoveForExcursion(Excursion excursion)
+    public async Task RemoveForExcursionAsync(Excursion excursion, CancellationToken cancellationToken)
     {
-        var links = context.ExcursionExhibitions.Where(link => link.ExcursionId == excursion.Id).ToList();
+        var links = await context.ExcursionExhibitions
+            .Where(link => link.ExcursionId == excursion.Id).ToListAsync(cancellationToken);
         context.ExcursionExhibitions.RemoveRange(links);
-        context.SaveChanges();
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

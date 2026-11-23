@@ -16,29 +16,31 @@ public class VisitorsController(IVisitorService service, ILogger<VisitorsControl
     /// <summary>
     /// Возвращает список всех посетителей.
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Список посетителей.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<VisitorDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<IReadOnlyList<VisitorDto>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<VisitorDto>>> GetAll(CancellationToken cancellationToken)
     {
         logger.LogInformation("Получение списка посетителей.");
-        return Ok(service.GetAll());
+        return Ok(await service.GetAllAsync(cancellationToken));
     }
 
     /// <summary>
     /// Возвращает данные посетителя по идентификатору.
     /// </summary>
     /// <param name="id">Идентификатор посетителя.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Данные посетителя или ответ об отсутствии записи.</returns>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(VisitorDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<VisitorDto> GetById(int id)
+    public async Task<ActionResult<VisitorDto>> GetById(int id, CancellationToken cancellationToken)
     {
         logger.LogInformation("Получение посетителя {Id}.", id);
-        var item = service.GetById(id);
+        var item = await service.GetByIdAsync(id, cancellationToken);
         return item is null ? NotFound() : Ok(item);
     }
 
@@ -46,15 +48,16 @@ public class VisitorsController(IVisitorService service, ILogger<VisitorsControl
     /// Создаёт запись посетителя.
     /// </summary>
     /// <param name="dto">Данные для создания посетителя.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Созданная запись и адрес её получения.</returns>
     [HttpPost]
     [ProducesResponseType(typeof(VisitorDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<VisitorDto> Create([FromBody] VisitorCreateUpdateDto dto)
+    public async Task<ActionResult<VisitorDto>> Create([FromBody] VisitorCreateUpdateDto dto, CancellationToken cancellationToken)
     {
         logger.LogInformation("Создание посетителя.");
-        var created = service.Create(dto);
+        var created = await service.CreateAsync(dto, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -63,31 +66,33 @@ public class VisitorsController(IVisitorService service, ILogger<VisitorsControl
     /// </summary>
     /// <param name="id">Идентификатор посетителя.</param>
     /// <param name="dto">Новые данные посетителя.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Ответ без содержимого или сообщение об отсутствии записи.</returns>
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult Update(int id, [FromBody] VisitorCreateUpdateDto dto)
+    public async Task<ActionResult> Update(int id, [FromBody] VisitorCreateUpdateDto dto, CancellationToken cancellationToken)
     {
         logger.LogInformation("Обновление посетителя {Id}.", id);
-        return service.Update(id, dto) ? NoContent() : NotFound();
+        return await service.UpdateAsync(id, dto, cancellationToken) ? NoContent() : NotFound();
     }
 
     /// <summary>
     /// Удаляет запись посетителя.
     /// </summary>
     /// <param name="id">Идентификатор посетителя.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Ответ без содержимого либо ошибка отсутствия или использования записи.</returns>
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult Delete(int id)
+    public async Task<ActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         logger.LogInformation("Удаление посетителя {Id}.", id);
-        return service.Delete(id) ? NoContent() : NotFound();
+        return await service.DeleteAsync(id, cancellationToken) ? NoContent() : NotFound();
     }
 }

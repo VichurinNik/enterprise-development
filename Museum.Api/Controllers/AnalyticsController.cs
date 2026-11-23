@@ -18,27 +18,29 @@ public class AnalyticsController(IAnalyticsService analyticsService, ILogger<Ana
     /// <summary>
     /// Возвращает топ-5 выставок по числу уникальных посетителей.
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Результаты аналитического запроса.</returns>
     [HttpGet("top-exhibitions")]
     [ProducesResponseType(typeof(IReadOnlyList<TopExhibitionDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<IReadOnlyList<TopExhibitionDto>> GetTop5Exhibitions()
+    public async Task<ActionResult<IReadOnlyList<TopExhibitionDto>>> GetTop5Exhibitions(CancellationToken cancellationToken)
     {
         logger.LogInformation("Выполнение аналитического запроса {Query}.", nameof(GetTop5Exhibitions));
-        return Ok(analyticsService.GetTop5Exhibitions());
+        return Ok(await analyticsService.GetTop5ExhibitionsAsync(cancellationToken));
     }
 
     /// <summary>
     /// Возвращает экскурсии с минимальным количеством участников.
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Результаты аналитического запроса.</returns>
     [HttpGet("minimum-participants")]
     [ProducesResponseType(typeof(IReadOnlyList<ExcursionParticipantsDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<IReadOnlyList<ExcursionParticipantsDto>> GetExcursionsWithMinimumParticipants()
+    public async Task<ActionResult<IReadOnlyList<ExcursionParticipantsDto>>> GetExcursionsWithMinimumParticipants(CancellationToken cancellationToken)
     {
         logger.LogInformation("Выполнение аналитического запроса {Query}.", nameof(GetExcursionsWithMinimumParticipants));
-        return Ok(analyticsService.GetExcursionsWithMinimumParticipants());
+        return Ok(await analyticsService.GetExcursionsWithMinimumParticipantsAsync(cancellationToken));
     }
 
     /// <summary>
@@ -46,15 +48,16 @@ public class AnalyticsController(IAnalyticsService analyticsService, ILogger<Ana
     /// </summary>
     /// <param name="start">Начальная дата периода, включительно.</param>
     /// <param name="end">Конечная дата периода, включительно.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Результаты аналитического запроса.</returns>
     [HttpGet("theme-summary")]
     [ProducesResponseType(typeof(IReadOnlyList<ThemeAttendanceSummaryDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<IReadOnlyList<ThemeAttendanceSummaryDto>> GetThemeAttendanceSummary([FromQuery] DateTime start, [FromQuery] DateTime end)
+    public async Task<ActionResult<IReadOnlyList<ThemeAttendanceSummaryDto>>> GetThemeAttendanceSummary([FromQuery] DateTime start, [FromQuery] DateTime end, CancellationToken cancellationToken)
     {
         logger.LogInformation("Выполнение аналитического запроса {Query}.", nameof(GetThemeAttendanceSummary));
-        return Ok(analyticsService.GetThemeAttendanceSummary(start, end));
+        return Ok(await analyticsService.GetThemeAttendanceSummaryAsync(start, end, cancellationToken));
     }
 
     /// <summary>
@@ -63,29 +66,31 @@ public class AnalyticsController(IAnalyticsService analyticsService, ILogger<Ana
     /// <param name="hallNumber">Номер зала.</param>
     /// <param name="start">Начальная дата периода, включительно.</param>
     /// <param name="end">Конечная дата периода, включительно.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Результаты аналитического запроса.</returns>
     [HttpGet("hall-excursions")]
     [ProducesResponseType(typeof(IReadOnlyList<ExcursionsDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<IReadOnlyList<ExcursionsDto>> GetExcursionsInHall([FromQuery] int hallNumber, [FromQuery] DateTime start, [FromQuery] DateTime end)
+    public async Task<ActionResult<IReadOnlyList<ExcursionsDto>>> GetExcursionsInHall([FromQuery] int hallNumber, [FromQuery] DateTime start, [FromQuery] DateTime end, CancellationToken cancellationToken)
     {
         logger.LogInformation("Выполнение аналитического запроса {Query}.", nameof(GetExcursionsInHall));
-        return Ok(analyticsService.GetExcursionsInHall(hallNumber, start, end));
+        return Ok(await analyticsService.GetExcursionsInHallAsync(hallNumber, start, end, cancellationToken));
     }
 
     /// <summary>
     /// Возвращает посетителей экскурсии в алфавитном порядке.
     /// </summary>
     /// <param name="excursionId">Идентификатор экскурсии.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Результаты аналитического запроса.</returns>
     [HttpGet("excursions/{excursionId:int}/visitors")]
     [ProducesResponseType(typeof(IReadOnlyList<VisitorDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<IReadOnlyList<VisitorDto>> GetVisitorsForExcursion(int excursionId)
+    public async Task<ActionResult<IReadOnlyList<VisitorDto>>> GetVisitorsForExcursion(int excursionId, CancellationToken cancellationToken)
     {
         logger.LogInformation("Выполнение аналитического запроса {Query}.", nameof(GetVisitorsForExcursion));
-        return Ok(analyticsService.GetVisitorsForExcursion(excursionId));
+        return Ok(await analyticsService.GetVisitorsForExcursionAsync(excursionId, cancellationToken));
     }
 }

@@ -19,60 +19,60 @@ public class ExcursionService(
     IExcursionExhibitionRepository links) : IExcursionService
 {
     /// <inheritdoc />
-    public IReadOnlyList<ExcursionsDto> GetAll() => excursions.GetAll().Select(MapToDto).ToList();
+    public async Task<IReadOnlyList<ExcursionsDto>> GetAllAsync(CancellationToken cancellationToken) => (await excursions.GetAllAsync(cancellationToken)).Select(MapToDto).ToList();
 
     /// <inheritdoc />
-    public ExcursionsDto? GetById(int id)
+    public async Task<ExcursionsDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var excursion = excursions.GetById(id);
+        var excursion = await excursions.GetByIdAsync(id, cancellationToken);
         return excursion is null ? null : MapToDto(excursion);
     }
 
     /// <inheritdoc />
-    public ExcursionsDto Create(ExcursionCreateUpdateDto dto)
+    public async Task<ExcursionsDto> CreateAsync(ExcursionCreateUpdateDto dto, CancellationToken cancellationToken)
     {
-        var selected = ResolveExhibitions(dto);
-        var excursion = excursions.Create(new Excursion
+        var selected = await ResolveExhibitionsAsync(dto, cancellationToken);
+        var excursion = await excursions.CreateAsync(new Excursion
         {
             Date = dto.Date,
             Duration = dto.Duration
-        });
-        links.ReplaceForExcursion(excursion, selected);
+        }, cancellationToken);
+        await links.ReplaceForExcursionAsync(excursion, selected, cancellationToken);
         return MapToDto(excursion);
     }
 
     /// <inheritdoc />
-    public bool Update(int id, ExcursionCreateUpdateDto dto)
+    public async Task<bool> UpdateAsync(int id, ExcursionCreateUpdateDto dto, CancellationToken cancellationToken)
     {
-        var excursion = excursions.GetById(id);
+        var excursion = await excursions.GetByIdAsync(id, cancellationToken);
         if (excursion is null)
         {
             return false;
         }
 
-        var selected = ResolveExhibitions(dto);
+        var selected = await ResolveExhibitionsAsync(dto, cancellationToken);
         excursion.Date = dto.Date;
         excursion.Duration = dto.Duration;
-        links.ReplaceForExcursion(excursion, selected);
-        return excursions.Update(excursion);
+        await links.ReplaceForExcursionAsync(excursion, selected, cancellationToken);
+        return await excursions.UpdateAsync(excursion, cancellationToken);
     }
 
     /// <inheritdoc />
-    public bool Delete(int id)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        var excursion = excursions.GetById(id);
+        var excursion = await excursions.GetByIdAsync(id, cancellationToken);
         if (excursion is null)
         {
             return false;
         }
 
-        if (tickets.GetAll().Any(ticket => ticket.ExcursionId == id))
+        if ((await tickets.GetAllAsync(cancellationToken)).Any(ticket => ticket.ExcursionId == id))
         {
             throw new EntityInUseException("Нельзя удалить экскурсию, на которую проданы билеты.");
         }
 
-        links.RemoveForExcursion(excursion);
-        excursions.Delete(id);
+        await links.RemoveForExcursionAsync(excursion, cancellationToken);
+        await excursions.DeleteAsync(id, cancellationToken);
         return true;
     }
 
@@ -80,8 +80,10 @@ public class ExcursionService(
     /// Проверяет продолжительность экскурсии и находит выставки до изменения данных.
     /// </summary>
     /// <param name="dto">Данные создаваемой или обновляемой экскурсии.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Список найденных выставок без повторений.</returns>
-    private IReadOnlyList<Exhibition> ResolveExhibitions(ExcursionCreateUpdateDto dto)
+    private async Task<IReadOnlyList<Exhibition>> ResolveExhibitionsAsync(
+        ExcursionCreateUpdateDto dto, CancellationToken cancellationToken)
     {
         if (dto.Duration <= TimeSpan.Zero)
         {
@@ -93,10 +95,15 @@ public class ExcursionService(
             throw new ArgumentException("Список выставок не задан или содержит повторения.", nameof(dto));
         }
 
-        return dto.ExhibitionIds
-            .Select(id => exhibitions.GetById(id)
-                ?? throw new ArgumentException($"Выставка с идентификатором {id} не найдена.", nameof(dto)))
-            .ToList();
+        var selected = new List<Exhibition>(dto.ExhibitionIds.Count);
+        foreach (var id in dto.ExhibitionIds)
+        {
+            var exhibition = await exhibitions.GetByIdAsync(id, cancellationToken)
+                ?? throw new ArgumentException($"Выставка с идентификатором {id} не найдена.", nameof(dto));
+            selected.Add(exhibition);
+        }
+
+        return selected;
     }
 
     /// <summary>

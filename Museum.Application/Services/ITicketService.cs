@@ -10,35 +10,40 @@ public interface ITicketService
     /// <summary>
     /// Возвращает список всех билетов.
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Список данных билетов.</returns>
-    public IReadOnlyList<TicketDto> GetAll();
+    public Task<IReadOnlyList<TicketDto>> GetAllAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Возвращает данные билета по идентификатору.
     /// </summary>
     /// <param name="id">Идентификатор билета.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Данные билета или null, если запись не найдена.</returns>
-    public TicketDto? GetById(int id);
+    public Task<TicketDto?> GetByIdAsync(int id, CancellationToken cancellationToken);
 
     /// <summary>
     /// Создаёт запись билета.
     /// </summary>
     /// <param name="dto">Данные для создания билета.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Созданная запись с присвоенным идентификатором.</returns>
-    public TicketDto Create(TicketCreateUpdateDto dto);
+    public Task<TicketDto> CreateAsync(TicketCreateUpdateDto dto, CancellationToken cancellationToken);
 
     /// <summary>
     /// Обновляет данные билета.
     /// </summary>
     /// <param name="id">Идентификатор билета.</param>
     /// <param name="dto">Новые данные билета.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>True, если запись обновлена; false, если она не найдена.</returns>
-    public bool Update(int id, TicketCreateUpdateDto dto);
+    public Task<bool> UpdateAsync(int id, TicketCreateUpdateDto dto, CancellationToken cancellationToken);
 
     /// <summary>
     /// Удаляет запись билета.
     /// </summary>
     /// <param name="id">Идентификатор билета.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>True, если запись удалена; false, если она не найдена.</returns>
-    public bool Delete(int id);
+    public Task<bool> DeleteAsync(int id, CancellationToken cancellationToken);
 }

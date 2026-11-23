@@ -18,22 +18,22 @@ public class ExhibitionService(
     ILogger<ExhibitionService> logger) : IExhibitionService
 {
     /// <inheritdoc />
-    public IReadOnlyList<ExhibitionDto> GetAll()
+    public async Task<IReadOnlyList<ExhibitionDto>> GetAllAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Запрос на получение всех выставок.");
-        return repository.GetAll().Select(MapToDto).ToList();
+        return (await repository.GetAllAsync(cancellationToken)).Select(MapToDto).ToList();
     }
 
     /// <inheritdoc />
-    public ExhibitionDto? GetById(int id)
+    public async Task<ExhibitionDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
         logger.LogInformation("Запрос на получение выставки с Id = {Id}.", id);
-        var entity = repository.GetById(id);
+        var entity = await repository.GetByIdAsync(id, cancellationToken);
         return entity is null ? null : MapToDto(entity);
     }
 
     /// <inheritdoc />
-    public ExhibitionDto Create(ExhibitionCreateUpdateDto dto)
+    public async Task<ExhibitionDto> CreateAsync(ExhibitionCreateUpdateDto dto, CancellationToken cancellationToken)
     {
         var entity = new Exhibition
         {
@@ -44,15 +44,15 @@ public class ExhibitionService(
             EndDate = dto.EndDate
         };
 
-        var created = repository.Create(entity);
+        var created = await repository.CreateAsync(entity, cancellationToken);
         logger.LogInformation("Создана новая выставка с Id = {Id}.", created.Id);
         return MapToDto(created);
     }
 
     /// <inheritdoc />
-    public bool Update(int id, ExhibitionCreateUpdateDto dto)
+    public async Task<bool> UpdateAsync(int id, ExhibitionCreateUpdateDto dto, CancellationToken cancellationToken)
     {
-        var existing = repository.GetById(id);
+        var existing = await repository.GetByIdAsync(id, cancellationToken);
         if (existing is null)
         {
             logger.LogWarning("Не удалось обновить: выставка с Id = {Id} не найдена.", id);
@@ -65,7 +65,7 @@ public class ExhibitionService(
         existing.StartDate = dto.StartDate;
         existing.EndDate = dto.EndDate;
 
-        var result = repository.Update(existing);
+        var result = await repository.UpdateAsync(existing, cancellationToken);
         if (result)
         {
             logger.LogInformation("Обновлена выставка с Id = {Id}.", id);
@@ -75,19 +75,19 @@ public class ExhibitionService(
     }
 
     /// <inheritdoc />
-    public bool Delete(int id)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        if (repository.GetById(id) is null)
+        if (await repository.GetByIdAsync(id, cancellationToken) is null)
         {
             return false;
         }
 
-        if (links.ExistsForExhibition(id))
+        if (await links.ExistsForExhibitionAsync(id, cancellationToken))
         {
             throw new EntityInUseException("Нельзя удалить выставку, которая входит в экскурсию.");
         }
 
-        repository.Delete(id);
+        await repository.DeleteAsync(id, cancellationToken);
         logger.LogInformation("Удалена выставка с Id = {Id}.", id);
         return true;
     }

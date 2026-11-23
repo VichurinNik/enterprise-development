@@ -13,31 +13,31 @@ namespace Museum.Application.Services;
 public class VisitorService(IRepository<Visitor> visitors, IRepository<Ticket> tickets) : IVisitorService
 {
     /// <inheritdoc />
-    public IReadOnlyList<VisitorDto> GetAll() => visitors.GetAll().Select(MapToDto).ToList();
+    public async Task<IReadOnlyList<VisitorDto>> GetAllAsync(CancellationToken cancellationToken) => (await visitors.GetAllAsync(cancellationToken)).Select(MapToDto).ToList();
 
     /// <inheritdoc />
-    public VisitorDto? GetById(int id)
+    public async Task<VisitorDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var visitor = visitors.GetById(id);
+        var visitor = await visitors.GetByIdAsync(id, cancellationToken);
         return visitor is null ? null : MapToDto(visitor);
     }
 
     /// <inheritdoc />
-    public VisitorDto Create(VisitorCreateUpdateDto dto)
+    public async Task<VisitorDto> CreateAsync(VisitorCreateUpdateDto dto, CancellationToken cancellationToken)
     {
-        var visitor = visitors.Create(new Visitor
+        var visitor = await visitors.CreateAsync(new Visitor
         {
             FullName = dto.FullName,
             Phone = dto.Phone,
             BirthDate = dto.BirthDate
-        });
+        }, cancellationToken);
         return MapToDto(visitor);
     }
 
     /// <inheritdoc />
-    public bool Update(int id, VisitorCreateUpdateDto dto)
+    public async Task<bool> UpdateAsync(int id, VisitorCreateUpdateDto dto, CancellationToken cancellationToken)
     {
-        var visitor = visitors.GetById(id);
+        var visitor = await visitors.GetByIdAsync(id, cancellationToken);
         if (visitor is null)
         {
             return false;
@@ -46,23 +46,23 @@ public class VisitorService(IRepository<Visitor> visitors, IRepository<Ticket> t
         visitor.FullName = dto.FullName;
         visitor.Phone = dto.Phone;
         visitor.BirthDate = dto.BirthDate;
-        return visitors.Update(visitor);
+        return await visitors.UpdateAsync(visitor, cancellationToken);
     }
 
     /// <inheritdoc />
-    public bool Delete(int id)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        if (visitors.GetById(id) is null)
+        if (await visitors.GetByIdAsync(id, cancellationToken) is null)
         {
             return false;
         }
 
-        if (tickets.GetAll().Any(ticket => ticket.VisitorId == id))
+        if ((await tickets.GetAllAsync(cancellationToken)).Any(ticket => ticket.VisitorId == id))
         {
             throw new EntityInUseException("Нельзя удалить посетителя, у которого есть билеты.");
         }
 
-        visitors.Delete(id);
+        await visitors.DeleteAsync(id, cancellationToken);
         return true;
     }
 

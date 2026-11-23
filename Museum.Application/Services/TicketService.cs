@@ -16,20 +16,20 @@ public class TicketService(
     IRepository<Visitor> visitors) : ITicketService
 {
     /// <inheritdoc />
-    public IReadOnlyList<TicketDto> GetAll() => tickets.GetAll().Select(MapToDto).ToList();
+    public async Task<IReadOnlyList<TicketDto>> GetAllAsync(CancellationToken cancellationToken) => (await tickets.GetAllAsync(cancellationToken)).Select(MapToDto).ToList();
 
     /// <inheritdoc />
-    public TicketDto? GetById(int id)
+    public async Task<TicketDto?> GetByIdAsync(int id, CancellationToken cancellationToken)
     {
-        var ticket = tickets.GetById(id);
+        var ticket = await tickets.GetByIdAsync(id, cancellationToken);
         return ticket is null ? null : MapToDto(ticket);
     }
 
     /// <inheritdoc />
-    public TicketDto Create(TicketCreateUpdateDto dto)
+    public async Task<TicketDto> CreateAsync(TicketCreateUpdateDto dto, CancellationToken cancellationToken)
     {
-        var (excursion, visitor) = ResolveRelations(dto);
-        var ticket = tickets.Create(new Ticket
+        var (excursion, visitor) = await ResolveRelationsAsync(dto, cancellationToken);
+        var ticket = await tickets.CreateAsync(new Ticket
         {
             ExcursionId = excursion.Id,
             Excursion = excursion,
@@ -37,7 +37,7 @@ public class TicketService(
             Visitor = visitor,
             TicketType = dto.TicketType,
             Price = dto.Price
-        });
+        }, cancellationToken);
         if (!excursion.Tickets.Contains(ticket))
             excursion.Tickets.Add(ticket);
         if (!visitor.Tickets.Contains(ticket))
@@ -46,15 +46,15 @@ public class TicketService(
     }
 
     /// <inheritdoc />
-    public bool Update(int id, TicketCreateUpdateDto dto)
+    public async Task<bool> UpdateAsync(int id, TicketCreateUpdateDto dto, CancellationToken cancellationToken)
     {
-        var ticket = tickets.GetById(id);
+        var ticket = await tickets.GetByIdAsync(id, cancellationToken);
         if (ticket is null)
         {
             return false;
         }
 
-        var (excursion, visitor) = ResolveRelations(dto);
+        var (excursion, visitor) = await ResolveRelationsAsync(dto, cancellationToken);
         ticket.Excursion.Tickets.Remove(ticket);
         ticket.Visitor.Tickets.Remove(ticket);
         ticket.ExcursionId = excursion.Id;
@@ -67,13 +67,13 @@ public class TicketService(
             excursion.Tickets.Add(ticket);
         if (!visitor.Tickets.Contains(ticket))
             visitor.Tickets.Add(ticket);
-        return tickets.Update(ticket);
+        return await tickets.UpdateAsync(ticket, cancellationToken);
     }
 
     /// <inheritdoc />
-    public bool Delete(int id)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken)
     {
-        var ticket = tickets.GetById(id);
+        var ticket = await tickets.GetByIdAsync(id, cancellationToken);
         if (ticket is null)
         {
             return false;
@@ -81,7 +81,7 @@ public class TicketService(
 
         ticket.Excursion.Tickets.Remove(ticket);
         ticket.Visitor.Tickets.Remove(ticket);
-        tickets.Delete(id);
+        await tickets.DeleteAsync(id, cancellationToken);
         return true;
     }
 
@@ -89,17 +89,19 @@ public class TicketService(
     /// Проверяет стоимость билета и находит связанные записи до изменения данных.
     /// </summary>
     /// <param name="dto">Данные создаваемого или обновляемого билета.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Найденные экскурсия и посетитель.</returns>
-    private (Excursion Excursion, Visitor Visitor) ResolveRelations(TicketCreateUpdateDto dto)
+    private async Task<(Excursion Excursion, Visitor Visitor)> ResolveRelationsAsync(
+        TicketCreateUpdateDto dto, CancellationToken cancellationToken)
     {
         if (dto.Price < 0)
         {
             throw new ArgumentException("Стоимость не может быть отрицательной.", nameof(dto));
         }
 
-        var excursion = excursions.GetById(dto.ExcursionId)
+        var excursion = await excursions.GetByIdAsync(dto.ExcursionId, cancellationToken)
             ?? throw new ArgumentException("Экскурсия не найдена.", nameof(dto));
-        var visitor = visitors.GetById(dto.VisitorId)
+        var visitor = await visitors.GetByIdAsync(dto.VisitorId, cancellationToken)
             ?? throw new ArgumentException("Посетитель не найден.", nameof(dto));
         return (excursion, visitor);
     }

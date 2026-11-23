@@ -16,29 +16,31 @@ public class ExcursionsController(IExcursionService service, ILogger<ExcursionsC
     /// <summary>
     /// Возвращает список всех экскурсий.
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Список экскурсий.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(IReadOnlyList<ExcursionsDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<IReadOnlyList<ExcursionsDto>> GetAll()
+    public async Task<ActionResult<IReadOnlyList<ExcursionsDto>>> GetAll(CancellationToken cancellationToken)
     {
         logger.LogInformation("Получение списка экскурсий.");
-        return Ok(service.GetAll());
+        return Ok(await service.GetAllAsync(cancellationToken));
     }
 
     /// <summary>
     /// Возвращает данные экскурсии по идентификатору.
     /// </summary>
     /// <param name="id">Идентификатор экскурсии.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Данные экскурсии или ответ об отсутствии записи.</returns>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(ExcursionsDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<ExcursionsDto> GetById(int id)
+    public async Task<ActionResult<ExcursionsDto>> GetById(int id, CancellationToken cancellationToken)
     {
         logger.LogInformation("Получение экскурсии {Id}.", id);
-        var item = service.GetById(id);
+        var item = await service.GetByIdAsync(id, cancellationToken);
         return item is null ? NotFound() : Ok(item);
     }
 
@@ -46,15 +48,16 @@ public class ExcursionsController(IExcursionService service, ILogger<ExcursionsC
     /// Создаёт запись экскурсии.
     /// </summary>
     /// <param name="dto">Данные для создания экскурсии.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Созданная запись и адрес её получения.</returns>
     [HttpPost]
     [ProducesResponseType(typeof(ExcursionsDto), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult<ExcursionsDto> Create([FromBody] ExcursionCreateUpdateDto dto)
+    public async Task<ActionResult<ExcursionsDto>> Create([FromBody] ExcursionCreateUpdateDto dto, CancellationToken cancellationToken)
     {
         logger.LogInformation("Создание экскурсии.");
-        var created = service.Create(dto);
+        var created = await service.CreateAsync(dto, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -63,31 +66,33 @@ public class ExcursionsController(IExcursionService service, ILogger<ExcursionsC
     /// </summary>
     /// <param name="id">Идентификатор экскурсии.</param>
     /// <param name="dto">Новые данные экскурсии.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Ответ без содержимого или сообщение об отсутствии записи.</returns>
     [HttpPut("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult Update(int id, [FromBody] ExcursionCreateUpdateDto dto)
+    public async Task<ActionResult> Update(int id, [FromBody] ExcursionCreateUpdateDto dto, CancellationToken cancellationToken)
     {
         logger.LogInformation("Обновление экскурсии {Id}.", id);
-        return service.Update(id, dto) ? NoContent() : NotFound();
+        return await service.UpdateAsync(id, dto, cancellationToken) ? NoContent() : NotFound();
     }
 
     /// <summary>
     /// Удаляет запись экскурсии.
     /// </summary>
     /// <param name="id">Идентификатор экскурсии.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>Ответ без содержимого либо ошибка отсутствия или использования записи.</returns>
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public ActionResult Delete(int id)
+    public async Task<ActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         logger.LogInformation("Удаление экскурсии {Id}.", id);
-        return service.Delete(id) ? NoContent() : NotFound();
+        return await service.DeleteAsync(id, cancellationToken) ? NoContent() : NotFound();
     }
 }

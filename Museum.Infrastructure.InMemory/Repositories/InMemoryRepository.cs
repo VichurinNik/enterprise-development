@@ -14,14 +14,50 @@ public class InMemoryRepository<TEntity, TKey>(List<TEntity> items, Func<TEntity
     : IRepository<TEntity, TKey> where TEntity : class
 {
     /// <inheritdoc />
-    public IReadOnlyList<TEntity> GetAll() => items;
+    public Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(GetAll());
+    }
 
     /// <inheritdoc />
-    public TEntity? GetById(TKey id) =>
+    public Task<TEntity?> GetByIdAsync(TKey id, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(GetById(id));
+    }
+
+    /// <inheritdoc />
+    public Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(Create(entity));
+    }
+
+    /// <inheritdoc />
+    public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult(Update(entity));
+    }
+
+    /// <inheritdoc />
+    public Task DeleteAsync(TKey id, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        Delete(id);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Возвращает локальную коллекцию.</summary>
+    protected IReadOnlyList<TEntity> GetAll() => items;
+
+    /// <summary>Находит локальную запись по ключу.</summary>
+    protected TEntity? GetById(TKey id) =>
         items.FirstOrDefault(item => EqualityComparer<TKey>.Default.Equals(getKey(item), id));
 
-    /// <inheritdoc />
-    public virtual TEntity Create(TEntity entity)
+    /// <summary>Добавляет запись в коллекцию.</summary>
+    protected virtual TEntity Create(TEntity entity)
     {
         if (GetById(getKey(entity)) is not null)
             throw new ArgumentException("Запись с таким ключом уже существует.", nameof(entity));
@@ -30,8 +66,8 @@ public class InMemoryRepository<TEntity, TKey>(List<TEntity> items, Func<TEntity
         return entity;
     }
 
-    /// <inheritdoc />
-    public virtual bool Update(TEntity entity)
+    /// <summary>Заменяет существующую запись.</summary>
+    protected virtual bool Update(TEntity entity)
     {
         var existing = GetById(getKey(entity));
         if (existing is null)
@@ -41,8 +77,8 @@ public class InMemoryRepository<TEntity, TKey>(List<TEntity> items, Func<TEntity
         return true;
     }
 
-    /// <inheritdoc />
-    public virtual void Delete(TKey id)
+    /// <summary>Удаляет запись из коллекции.</summary>
+    protected virtual void Delete(TKey id)
     {
         if (GetById(id) is { } existing)
             items.Remove(existing);
@@ -59,7 +95,7 @@ public class InMemoryRepository<TEntity>(List<TEntity> items)
     where TEntity : class, IEntity
 {
     /// <inheritdoc />
-    public override TEntity Create(TEntity entity)
+    protected override TEntity Create(TEntity entity)
     {
         var entities = GetAll();
         entity.Id = entities.Count == 0 ? 1 : entities.Max(item => item.Id) + 1;

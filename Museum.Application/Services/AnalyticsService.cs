@@ -23,13 +23,13 @@ public class AnalyticsService(
     ILogger<AnalyticsService> logger) : IAnalyticsService
 {
     /// <inheritdoc />
-    public IReadOnlyList<TopExhibitionDto> GetTop5Exhibitions()
+    public async Task<IReadOnlyList<TopExhibitionDto>> GetTop5ExhibitionsAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Формирование отчета: Топ-5 выставок по посетителям.");
 
-        var tickets = ticketRepo.GetAll();
-        var excursions = excursionRepo.GetAll();
-        var exhibitions = exhibitionRepo.GetAll();
+        var tickets = await ticketRepo.GetAllAsync(cancellationToken);
+        var excursions = await excursionRepo.GetAllAsync(cancellationToken);
+        var exhibitions = await exhibitionRepo.GetAllAsync(cancellationToken);
 
         var result = exhibitions.Select(ex =>
         {
@@ -55,11 +55,11 @@ public class AnalyticsService(
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<ExcursionParticipantsDto> GetExcursionsWithMinimumParticipants()
+    public async Task<IReadOnlyList<ExcursionParticipantsDto>> GetExcursionsWithMinimumParticipantsAsync(CancellationToken cancellationToken)
     {
         logger.LogInformation("Формирование списка экскурсий с минимальным количеством участников.");
-        var tickets = ticketRepo.GetAll();
-        var counts = excursionRepo.GetAll()
+        var tickets = await ticketRepo.GetAllAsync(cancellationToken);
+        var counts = (await excursionRepo.GetAllAsync(cancellationToken))
             .Select(excursion => new ExcursionParticipantsDto(
                 excursion.Id,
                 tickets.Where(ticket => ticket.ExcursionId == excursion.Id)
@@ -71,15 +71,15 @@ public class AnalyticsService(
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<ThemeAttendanceSummaryDto> GetThemeAttendanceSummary(DateTime start, DateTime end)
+    public async Task<IReadOnlyList<ThemeAttendanceSummaryDto>> GetThemeAttendanceSummaryAsync(DateTime start, DateTime end, CancellationToken cancellationToken)
     {
         logger.LogInformation("Формирование сводной статистики за период с {Start} по {End}.", start, end);
 
         if (start > end)
             throw new ArgumentException("Дата начала периода должна быть не позже даты окончания.");
 
-        var tickets = ticketRepo.GetAll();
-        return excursionRepo.GetAll()
+        var tickets = await ticketRepo.GetAllAsync(cancellationToken);
+        return (await excursionRepo.GetAllAsync(cancellationToken))
             .Where(excursion => excursion.Date.Date >= start.Date && excursion.Date.Date <= end.Date)
             .SelectMany(excursion => excursion.Exhibitions.Select(link => new { excursion, link }))
             .GroupBy(item => item.link.Exhibition.Theme)
@@ -98,12 +98,12 @@ public class AnalyticsService(
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<ExcursionsDto> GetExcursionsInHall(int hallNumber, DateTime start, DateTime end)
+    public async Task<IReadOnlyList<ExcursionsDto>> GetExcursionsInHallAsync(int hallNumber, DateTime start, DateTime end, CancellationToken cancellationToken)
     {
         if (start > end)
             throw new ArgumentException("Дата начала периода должна быть не позже даты окончания.");
         logger.LogInformation("Поиск экскурсий в зале {HallNumber} за период {Start}–{End}.", hallNumber, start, end);
-        return excursionRepo.GetAll()
+        return (await excursionRepo.GetAllAsync(cancellationToken))
             .Where(excursion => excursion.Date.Date >= start.Date && excursion.Date.Date <= end.Date
                 && excursion.Exhibitions.Any(link => link.Exhibition.HallNumber == hallNumber))
             .OrderBy(excursion => excursion.Date)
@@ -113,14 +113,15 @@ public class AnalyticsService(
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<VisitorDto> GetVisitorsForExcursion(int excursionId)
+    public async Task<IReadOnlyList<VisitorDto>> GetVisitorsForExcursionAsync(int excursionId, CancellationToken cancellationToken)
     {
         logger.LogInformation("Поиск посетителей экскурсии {ExcursionId}.", excursionId);
-        return ticketRepo.GetAll()
+        var visitors = await visitorRepo.GetAllAsync(cancellationToken);
+        return (await ticketRepo.GetAllAsync(cancellationToken))
             .Where(ticket => ticket.ExcursionId == excursionId)
             .Select(ticket => ticket.VisitorId)
             .Distinct()
-            .Join(visitorRepo.GetAll(), id => id, visitor => visitor.Id,
+            .Join(visitors, id => id, visitor => visitor.Id,
                 (_, visitor) => new VisitorDto(visitor.Id, visitor.FullName, visitor.Phone, visitor.BirthDate))
             .OrderBy(visitor => visitor.FullName)
             .ToList();

@@ -12,19 +12,22 @@ public interface IExcursionExhibitionRepository
     /// Проверяет, включена ли выставка хотя бы в одну экскурсию.
     /// </summary>
     /// <param name="exhibitionId">Идентификатор выставки.</param>
+    /// <param name="cancellationToken">Токен отмены операции.</param>
     /// <returns>True, если связь найдена.</returns>
-    public bool ExistsForExhibition(int exhibitionId);
+    public Task<bool> ExistsForExhibitionAsync(int exhibitionId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Заменяет связи экскурсии с выставками.
     /// </summary>
     /// <param name="excursion">Экскурсия, для которой обновляются связи.</param>
     /// <param name="exhibitions">Новый список выставок.</param>
-    public void ReplaceForExcursion(Excursion excursion, IReadOnlyList<Exhibition> exhibitions);
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    public Task ReplaceForExcursionAsync(Excursion excursion, IReadOnlyList<Exhibition> exhibitions, CancellationToken cancellationToken);
 
     /// <summary>
     /// Удаляет связи экскурсии с выставками.
     /// </summary>
     /// <param name="excursion">Экскурсия, для которой удаляются связи.</param>
-    public void RemoveForExcursion(Excursion excursion);
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    public Task RemoveForExcursionAsync(Excursion excursion, CancellationToken cancellationToken);
 }

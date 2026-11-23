@@ -12,31 +12,36 @@ public interface IRepository<TEntity, TKey> where TEntity : class
     /// <summary>
     /// Возвращает список всех сущностей.
     /// </summary>
-    public IReadOnlyList<TEntity> GetAll();
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    public Task<IReadOnlyList<TEntity>> GetAllAsync(CancellationToken cancellationToken);
 
     /// <summary>
     /// Возвращает сущность по её уникальному идентификатору.
     /// </summary>
     /// <param name="id">Идентификатор сущности.</param>
-    public TEntity? GetById(TKey id);
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    public Task<TEntity?> GetByIdAsync(TKey id, CancellationToken cancellationToken);
 
     /// <summary>
     /// Создаёт новую сущность.
     /// </summary>
     /// <param name="entity">Создаваемая сущность.</param>
-    public TEntity Create(TEntity entity);
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    public Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken);
 
     /// <summary>
     /// Обновляет существующую сущность.
     /// </summary>
     /// <param name="entity">Сущность с обновлёнными данными.</param>
-    public bool Update(TEntity entity);
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    public Task<bool> UpdateAsync(TEntity entity, CancellationToken cancellationToken);
 
     /// <summary>
     /// Удаляет сущность по её идентификатору.
     /// </summary>
     /// <param name="id">Идентификатор удаляемой сущности.</param>
-    public void Delete(TKey id);
+    /// <param name="cancellationToken">Токен отмены операции.</param>
+    public Task DeleteAsync(TKey id, CancellationToken cancellationToken);
 }
 
 /// <summary>
