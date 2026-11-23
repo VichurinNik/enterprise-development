@@ -152,6 +152,7 @@ public sealed class MuseumApiTests : IAsyncLifetime
 
         var summary = await client.GetFromJsonAsync<List<ThemeAttendanceSummaryDto>>(
             "/api/analytics/theme-summary?start=2026-01-01&end=2026-12-31", cancellationToken: TestContext.Current.CancellationToken);
+        Assert.Equal(new[] { "History", "Art", "Archaeology", "Science" }, summary!.Select(item => item.Theme));
         Assert.Equal(new[] { 10000m, 12500m, 12500m, 10000m }, summary!.Select(item => item.TotalRevenue));
         Assert.Equal(new[] { 9, 10, 10, 9 }, summary!.Select(item => item.TotalVisitors));
 

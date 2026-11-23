@@ -85,7 +85,7 @@ public class AnalyticsService(
             .GroupBy(item => item.link.Exhibition.Theme)
             .OrderBy(group => group.Key)
             .Select(group => new ThemeAttendanceSummaryDto(
-                group.Key,
+                group.Key.ToString(),
                 group.Select(item => item.link.ExhibitionId).Distinct().Count(),
                 group.Select(item => item.excursion.Id).Distinct().Count(),
                 group.SelectMany(item => tickets

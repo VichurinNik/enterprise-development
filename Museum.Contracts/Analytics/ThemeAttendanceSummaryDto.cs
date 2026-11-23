@@ -1,5 +1,3 @@
-using Museum.Shared.Enums;
-
 namespace Museum.Contracts.Analytics;
 
 /// <summary>
@@ -11,7 +9,7 @@ namespace Museum.Contracts.Analytics;
 /// <param name="TotalVisitors">Количество уникальных посетителей.</param>
 /// <param name="TotalRevenue">Общая стоимость билетов.</param>
 public record ThemeAttendanceSummaryDto(
-    ExhibitionTheme Theme,
+    string Theme,
     int ExhibitionCount,
     int ExcursionCount,
     int TotalVisitors,
