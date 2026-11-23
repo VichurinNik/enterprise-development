@@ -31,7 +31,7 @@ jobs:
         run: dnx --yes aspire.cli@13.5.4 -- --nologo setup
 
       - name: MySQL integration tests through Aspire
-        run: dotnet test Museum.IntegrationTests/Museum.IntegrationTests.csproj --no-build
+        run: dotnet test Museum.IntegrationTests/Museum.IntegrationTests.csproj --no-build -p:TestingPlatformShowTestsFailure=true -- --output Detailed
 
       - name: Check migrations
         run: |
