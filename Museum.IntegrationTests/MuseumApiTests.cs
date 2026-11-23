@@ -78,6 +78,9 @@ public sealed class MuseumApiTests : IAsyncLifetime
         var ticket = await Post<TicketDto>("/api/tickets",
             new TicketCreateUpdateDto(excursion.Id, visitor.Id, TicketType.Adult, 1234.56m));
 
+        Assert.Equal(visitor, ticket.Visitor);
+        Assert.Equal(excursion.Id, ticket.Excursion.Id);
+        Assert.Contains(ticket.Exhibitions, item => item.Id == exhibition.Id && item.Theme == "Art");
         Assert.Equal(TicketType.Adult, ticket.TicketType);
 
         foreach (var route in new[] { $"visitors/{visitor.Id}", $"excursions/{excursion.Id}", $"exhibitions/{exhibition.Id}" })
@@ -125,6 +128,8 @@ public sealed class MuseumApiTests : IAsyncLifetime
             cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(original);
         Assert.NotNull(unchangedTicket);
+        Assert.Equal(original.Visitor, unchangedTicket.Visitor);
+        Assert.Equal(original.Excursion.Id, unchangedTicket.Excursion.Id);
         Assert.Equal(original.Price, unchangedTicket.Price);
         Assert.Equal(original.TicketType, unchangedTicket.TicketType);
 

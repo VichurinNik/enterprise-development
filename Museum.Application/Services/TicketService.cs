@@ -112,5 +112,10 @@ public class TicketService(
     /// <param name="ticket">Билет из хранилища.</param>
     /// <returns>Данные билета для передачи клиенту.</returns>
     private static TicketDto MapToDto(Ticket ticket) =>
-        new(ticket.Id, ticket.ExcursionId, ticket.VisitorId, ticket.TicketType, ticket.Price);
+        new(ticket.Id, ticket.ExcursionId, ticket.VisitorId, ticket.TicketType, ticket.Price,
+            new(ticket.Excursion.Id, ticket.Excursion.Date, ticket.Excursion.Duration,
+                ticket.Excursion.Exhibitions.Select(link => link.ExhibitionId).ToList()),
+            new(ticket.Visitor.Id, ticket.Visitor.FullName, ticket.Visitor.Phone, ticket.Visitor.BirthDate),
+            ticket.Excursion.Exhibitions.Select(link => new TicketExhibitionDto(
+                link.ExhibitionId, link.Exhibition.Name, link.Exhibition.Theme.ToString())).ToList());
 }

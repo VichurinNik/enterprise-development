@@ -57,7 +57,7 @@ public sealed class MySqlRepository<TEntity>(MuseumDbContext context) : IReposit
         if (typeof(TEntity) == typeof(Excursion))
             query = query.Include("Exhibitions.Exhibition").Include("Tickets").AsSplitQuery();
         else if (typeof(TEntity) == typeof(Ticket))
-            query = query.Include("Excursion").Include("Visitor");
+            query = query.Include("Excursion.Exhibitions.Exhibition").Include("Visitor");
         return query;
     }
 }
