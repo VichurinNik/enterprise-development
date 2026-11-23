@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Museum.Application.Repositories;
+using Museum.Domain.Repositories;
 using Museum.Domain.Entities;
 
 namespace Museum.Infrastructure.MySql.Repositories;

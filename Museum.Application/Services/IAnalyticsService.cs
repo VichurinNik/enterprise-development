@@ -13,13 +13,13 @@ public interface IAnalyticsService
     /// Возвращает топ-5 выставок по числу уникальных посетителей.
     /// </summary>
     /// <returns>Результаты аналитического запроса.</returns>
-    IReadOnlyList<TopExhibitionDto> GetTop5Exhibitions();
+    public IReadOnlyList<TopExhibitionDto> GetTop5Exhibitions();
 
     /// <summary>
     /// Возвращает экскурсии с минимальным количеством участников.
     /// </summary>
     /// <returns>Результаты аналитического запроса.</returns>
-    IReadOnlyList<ExcursionParticipantsDto> GetExcursionsWithMinimumParticipants();
+    public IReadOnlyList<ExcursionParticipantsDto> GetExcursionsWithMinimumParticipants();
 
     /// <summary>
     /// Возвращает статистику по тематикам выставок за период.
@@ -27,7 +27,7 @@ public interface IAnalyticsService
     /// <param name="start">Начальная дата периода, включительно.</param>
     /// <param name="end">Конечная дата периода, включительно.</param>
     /// <returns>Результаты аналитического запроса.</returns>
-    IReadOnlyList<ThemeAttendanceSummaryDto> GetThemeAttendanceSummary(DateTime start, DateTime end);
+    public IReadOnlyList<ThemeAttendanceSummaryDto> GetThemeAttendanceSummary(DateTime start, DateTime end);
 
     /// <summary>
     /// Возвращает экскурсии в выбранном зале за период.
@@ -36,12 +36,12 @@ public interface IAnalyticsService
     /// <param name="start">Начальная дата периода, включительно.</param>
     /// <param name="end">Конечная дата периода, включительно.</param>
     /// <returns>Результаты аналитического запроса.</returns>
-    IReadOnlyList<ExcursionsDto> GetExcursionsInHall(int hallNumber, DateTime start, DateTime end);
+    public IReadOnlyList<ExcursionsDto> GetExcursionsInHall(int hallNumber, DateTime start, DateTime end);
 
     /// <summary>
     /// Возвращает посетителей экскурсии в алфавитном порядке.
     /// </summary>
     /// <param name="excursionId">Идентификатор экскурсии.</param>
     /// <returns>Результаты аналитического запроса.</returns>
-    IReadOnlyList<VisitorDto> GetVisitorsForExcursion(int excursionId);
+    public IReadOnlyList<VisitorDto> GetVisitorsForExcursion(int excursionId);
 }

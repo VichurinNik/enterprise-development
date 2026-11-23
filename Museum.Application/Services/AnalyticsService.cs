@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using Museum.Application.Repositories;
+using Museum.Domain.Repositories;
 using Museum.Contracts.Analytics;
 using Museum.Contracts.Excursions;
 using Museum.Contracts.Visitors;

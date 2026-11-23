@@ -1,4 +1,4 @@
-using Museum.Application.Repositories;
+using Museum.Domain.Repositories;
 using Museum.Contracts.Tickets;
 using Museum.Domain.Entities;
 

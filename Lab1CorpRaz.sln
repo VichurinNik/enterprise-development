@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.10.12217.157
@@ -22,6 +22,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum.AppHost", "Museum.AppHost\Museum.AppHost.csproj", "{ADF8F989-D12A-4306-9F5E-593F9519F87D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum.IntegrationTests", "Museum.IntegrationTests\Museum.IntegrationTests.csproj", "{915CEBFF-6FCD-4479-967F-53157059F95D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Museum.Infrastructure.InMemory", "Museum.Infrastructure.InMemory\Museum.Infrastructure.InMemory.csproj", "{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -141,6 +142,18 @@ Global
 		{915CEBFF-6FCD-4479-967F-53157059F95D}.Release|x64.Build.0 = Release|Any CPU
 		{915CEBFF-6FCD-4479-967F-53157059F95D}.Release|x86.ActiveCfg = Release|Any CPU
 		{915CEBFF-6FCD-4479-967F-53157059F95D}.Release|x86.Build.0 = Release|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Debug|x64.Build.0 = Debug|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Debug|x86.Build.0 = Debug|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Release|x64.ActiveCfg = Release|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Release|x64.Build.0 = Release|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Release|x86.ActiveCfg = Release|Any CPU
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -155,6 +168,7 @@ Global
 		{88414EDD-BBC3-4C27-99F1-96D587ED40D1} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{ADF8F989-D12A-4306-9F5E-593F9519F87D} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{915CEBFF-6FCD-4479-967F-53157059F95D} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{B5A71D45-C4E8-4DF1-84DE-1E4DEB88309D} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A92BC7C6-8EFB-43A0-A251-F9260E7FB165}

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Museum.Application.Repositories;
+using Museum.Domain.Repositories;
 using Museum.Domain.Entities;
 
 namespace Museum.Infrastructure.MySql.Repositories;
@@ -11,6 +11,45 @@ namespace Museum.Infrastructure.MySql.Repositories;
 public sealed class MySqlExcursionExhibitionRepository(MuseumDbContext context)
     : IExcursionExhibitionRepository
 {
+    /// <inheritdoc />
+    public IReadOnlyList<ExcursionExhibition> GetAll() =>
+        context.ExcursionExhibitions.OrderBy(link => link.ExcursionId).ThenBy(link => link.ExhibitionId).ToList();
+
+    /// <inheritdoc />
+    public ExcursionExhibition? GetById((int ExcursionId, int ExhibitionId) id) =>
+        context.ExcursionExhibitions.Find(id.ExcursionId, id.ExhibitionId);
+
+    /// <inheritdoc />
+    public ExcursionExhibition Create(ExcursionExhibition entity)
+    {
+        context.ExcursionExhibitions.Add(entity);
+        context.SaveChanges();
+        return entity;
+    }
+
+    /// <inheritdoc />
+    public bool Update(ExcursionExhibition entity)
+    {
+        var existing = GetById((entity.ExcursionId, entity.ExhibitionId));
+        if (existing is null)
+            return false;
+
+        context.Entry(existing).CurrentValues.SetValues(entity);
+        context.SaveChanges();
+        return true;
+    }
+
+    /// <inheritdoc />
+    public void Delete((int ExcursionId, int ExhibitionId) id)
+    {
+        var existing = GetById(id);
+        if (existing is null)
+            return;
+
+        context.ExcursionExhibitions.Remove(existing);
+        context.SaveChanges();
+    }
+
     /// <inheritdoc />
     public bool ExistsForExhibition(int exhibitionId) =>
         context.ExcursionExhibitions.Any(link => link.ExhibitionId == exhibitionId);

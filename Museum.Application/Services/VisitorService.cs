@@ -1,5 +1,5 @@
 using Museum.Application.Exceptions;
-using Museum.Application.Repositories;
+using Museum.Domain.Repositories;
 using Museum.Contracts.Visitors;
 using Museum.Domain.Entities;
 
