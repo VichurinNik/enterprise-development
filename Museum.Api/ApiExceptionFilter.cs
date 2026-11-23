@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using Museum.Application.Exceptions;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Museum.Api;
 

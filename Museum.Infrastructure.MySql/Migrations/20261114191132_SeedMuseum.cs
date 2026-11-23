@@ -52,16 +52,16 @@ namespace Museum.Infrastructure.MySql.Migrations
                 columns: new[] { "Id", "BirthDate", "FullName", "Phone" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(1991, 2, 15), "Посетитель Тестовый 1", "+79000000001" },
-                    { 2, new DateTime(1992, 3, 15), "Посетитель Тестовый 2", "+79000000002" },
-                    { 3, new DateTime(1993, 4, 15), "Посетитель Тестовый 3", "+79000000003" },
-                    { 4, new DateTime(1994, 5, 15), "Посетитель Тестовый 4", "+79000000004" },
-                    { 5, new DateTime(1995, 6, 15), "Посетитель Тестовый 5", "+79000000005" },
-                    { 6, new DateTime(1996, 7, 15), "Посетитель Тестовый 6", "+79000000006" },
-                    { 7, new DateTime(1997, 8, 15), "Посетитель Тестовый 7", "+79000000007" },
-                    { 8, new DateTime(1998, 9, 15), "Посетитель Тестовый 8", "+79000000008" },
-                    { 9, new DateTime(1999, 10, 15), "Посетитель Тестовый 9", "+79000000009" },
-                    { 10, new DateTime(2000, 11, 15), "Посетитель Тестовый 10", "+79000000010" }
+                    { 1, new DateTime(1991, 2, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 1", "+79000000001" },
+                    { 2, new DateTime(1992, 3, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 2", "+79000000002" },
+                    { 3, new DateTime(1993, 4, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 3", "+79000000003" },
+                    { 4, new DateTime(1994, 5, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 4", "+79000000004" },
+                    { 5, new DateTime(1995, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 5", "+79000000005" },
+                    { 6, new DateTime(1996, 7, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 6", "+79000000006" },
+                    { 7, new DateTime(1997, 8, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 7", "+79000000007" },
+                    { 8, new DateTime(1998, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 8", "+79000000008" },
+                    { 9, new DateTime(1999, 10, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 9", "+79000000009" },
+                    { 10, new DateTime(2000, 11, 15, 0, 0, 0, 0, DateTimeKind.Unspecified), "Посетитель Тестовый 10", "+79000000010" }
                 });
 
             migrationBuilder.InsertData(

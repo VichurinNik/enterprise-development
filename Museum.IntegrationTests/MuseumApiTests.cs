@@ -14,7 +14,7 @@ using Museum.Contracts.Tickets;
 using Museum.Contracts.Visitors;
 using Museum.Infrastructure.MySql;
 using Museum.Shared.Enums;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Museum.IntegrationTests;
 

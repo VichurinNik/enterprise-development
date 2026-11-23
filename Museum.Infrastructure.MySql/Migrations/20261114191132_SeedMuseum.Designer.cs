@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Museum.Infrastructure.MySql;
@@ -19,14 +20,18 @@ namespace Museum.Infrastructure.MySql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "9.0.23")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
+
+            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
             modelBuilder.Entity("Museum.Domain.Entities.Excursion", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime(6)");
@@ -226,6 +231,8 @@ namespace Museum.Infrastructure.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime(6)");
 
@@ -347,6 +354,8 @@ namespace Museum.Infrastructure.MySql.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ExcursionId")
                         .HasColumnType("int");
@@ -618,6 +627,8 @@ namespace Museum.Infrastructure.MySql.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("date");
 
@@ -639,70 +650,70 @@ namespace Museum.Infrastructure.MySql.Migrations
                         new
                         {
                             Id = 1,
-                            BirthDate = new DateTime(1991, 2, 15),
+                            BirthDate = new DateTime(1991, 2, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 1",
                             Phone = "+79000000001"
                         },
                         new
                         {
                             Id = 2,
-                            BirthDate = new DateTime(1992, 3, 15),
+                            BirthDate = new DateTime(1992, 3, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 2",
                             Phone = "+79000000002"
                         },
                         new
                         {
                             Id = 3,
-                            BirthDate = new DateTime(1993, 4, 15),
+                            BirthDate = new DateTime(1993, 4, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 3",
                             Phone = "+79000000003"
                         },
                         new
                         {
                             Id = 4,
-                            BirthDate = new DateTime(1994, 5, 15),
+                            BirthDate = new DateTime(1994, 5, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 4",
                             Phone = "+79000000004"
                         },
                         new
                         {
                             Id = 5,
-                            BirthDate = new DateTime(1995, 6, 15),
+                            BirthDate = new DateTime(1995, 6, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 5",
                             Phone = "+79000000005"
                         },
                         new
                         {
                             Id = 6,
-                            BirthDate = new DateTime(1996, 7, 15),
+                            BirthDate = new DateTime(1996, 7, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 6",
                             Phone = "+79000000006"
                         },
                         new
                         {
                             Id = 7,
-                            BirthDate = new DateTime(1997, 8, 15),
+                            BirthDate = new DateTime(1997, 8, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 7",
                             Phone = "+79000000007"
                         },
                         new
                         {
                             Id = 8,
-                            BirthDate = new DateTime(1998, 9, 15),
+                            BirthDate = new DateTime(1998, 9, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 8",
                             Phone = "+79000000008"
                         },
                         new
                         {
                             Id = 9,
-                            BirthDate = new DateTime(1999, 10, 15),
+                            BirthDate = new DateTime(1999, 10, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 9",
                             Phone = "+79000000009"
                         },
                         new
                         {
                             Id = 10,
-                            BirthDate = new DateTime(2000, 11, 15),
+                            BirthDate = new DateTime(2000, 11, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "Посетитель Тестовый 10",
                             Phone = "+79000000010"
                         });

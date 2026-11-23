@@ -18,7 +18,7 @@ public sealed class MuseumDbContextFactory : IDesignTimeDbContextFactory<MuseumD
         var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__museum")
             ?? "Server=localhost;Database=museum;User ID=root";
         var options = new DbContextOptionsBuilder<MuseumDbContext>()
-            .UseMySQL(connectionString).Options;
+            .UseMySql(connectionString, new MySqlServerVersion(new Version(8, 4))).Options;
         return new MuseumDbContext(options);
     }
 }

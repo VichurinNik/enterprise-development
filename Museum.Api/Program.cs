@@ -15,13 +15,7 @@ builder.Services.AddControllers(options =>
 });
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<MuseumDbContext>((services, options) =>
-{
-    var connectionString = services.GetRequiredService<IConfiguration>().GetConnectionString("museum")
-        ?? throw new InvalidOperationException(
-            "Не задано подключение museum. Запустите Museum.AppHost или задайте ConnectionStrings__museum.");
-    options.UseMySQL(connectionString);
-});
+builder.AddMuseumDatabase();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(MySqlRepository<>));
 builder.Services.AddScoped<IExcursionExhibitionRepository, MySqlExcursionExhibitionRepository>();
 
@@ -30,7 +24,6 @@ builder.Services.AddScoped<ITicketService, TicketService>();
 builder.Services.AddScoped<IExcursionService, ExcursionService>();
 builder.Services.AddScoped<IExhibitionService, ExhibitionService>();
 builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
-builder.Services.AddHealthChecks().AddCheck<MuseumDatabaseHealthCheck>("mysql");
 
 var app = builder.Build();
 
