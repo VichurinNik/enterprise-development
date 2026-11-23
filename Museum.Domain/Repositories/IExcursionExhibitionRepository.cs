@@ -6,6 +6,7 @@ namespace Museum.Domain.Repositories;
 /// Репозиторий связей между экскурсиями и выставками.
 /// </summary>
 public interface IExcursionExhibitionRepository
+    : IRepository<ExcursionExhibition, (int ExcursionId, int ExhibitionId)>
 {
     /// <summary>
     /// Проверяет, включена ли выставка хотя бы в одну экскурсию.
