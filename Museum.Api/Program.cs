@@ -47,8 +47,3 @@ app.MapHealthChecks("/health");
 app.MapControllers();
 
 app.Run();
-
-/// <summary>
-/// Точка входа API музея для запуска приложения и интеграционных тестов.
-/// </summary>
-public partial class Program { }
