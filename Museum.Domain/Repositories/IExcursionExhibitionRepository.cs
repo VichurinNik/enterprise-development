@@ -1,6 +1,6 @@
 using Museum.Domain.Entities;
 
-namespace Museum.Application.Repositories;
+namespace Museum.Domain.Repositories;
 
 /// <summary>
 /// Репозиторий связей между экскурсиями и выставками.

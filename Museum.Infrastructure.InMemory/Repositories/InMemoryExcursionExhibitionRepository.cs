@@ -1,6 +1,7 @@
+using Museum.Domain.Repositories;
 using Museum.Domain.Entities;
 
-namespace Museum.Application.Repositories;
+namespace Museum.Infrastructure.InMemory.Repositories;
 
 /// <summary>
 /// Хранит связи экскурсий с выставками в памяти и поддерживает навигационные коллекции.

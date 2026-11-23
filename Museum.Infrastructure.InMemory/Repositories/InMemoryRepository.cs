@@ -1,6 +1,7 @@
+using Museum.Domain.Repositories;
 using Museum.Domain.Entities;
 
-namespace Museum.Application.Repositories;
+namespace Museum.Infrastructure.InMemory.Repositories;
 
 /// <summary>
 /// Реализация универсального репозитория для хранения данных в оперативной памяти.

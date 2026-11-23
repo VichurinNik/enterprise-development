@@ -1,6 +1,6 @@
 using Museum.Domain.Entities;
 
-namespace Museum.Application.Repositories;
+namespace Museum.Domain.Repositories;
 
 /// <summary>
 /// Обобщённый интерфейс репозитория для выполнения CRUD-операций.

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Museum.Application.Exceptions;
-using Museum.Application.Repositories;
+using Museum.Domain.Repositories;
 using Museum.Contracts.Exhibitions;
 using Museum.Domain.Entities;
 

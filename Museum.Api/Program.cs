@@ -1,4 +1,5 @@
-using Museum.Application.Repositories;
+using Museum.Domain.Repositories;
+using Museum.Infrastructure.InMemory.Repositories;
 using Museum.Application.Services;
 using Museum.Api;
 using Museum.Domain.Data;
